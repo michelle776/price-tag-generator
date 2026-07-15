@@ -125,40 +125,40 @@
   .combo-logos{ display:flex; align-items:center; gap:3cqw; margin-bottom:3cqw; min-height:8cqw; }
   .combo-logo{ height:calc(8cqw * var(--logoscale,1)); max-width:calc(34cqw * var(--logoscale,1)); width:auto; object-fit:contain; }
   .logo-divider{ width:1px; align-self:stretch; background:#9b9b9b; }
-  .combo-headline{ font-size:4.5cqw; font-weight:800; line-height:calc(1.18 * var(--lhmul,1)); margin:0 0 2.6cqw; text-wrap:balance; }
+  .combo-headline{ font-size:calc(4.5cqw * var(--fontscale,1)); font-weight:800; line-height:calc(1.18 * var(--lhmul,1)); margin:0 0 2.6cqw; text-wrap:balance; }
   .combo-items{ list-style:none; margin:0; padding:0; flex:1; min-height:0; overflow:hidden; }
-  .combo-items li{ font-size:2.55cqw; line-height:calc(1.55 * var(--lhmul,1)); }
+  .combo-items li{ font-size:calc(2.55cqw * var(--fontscale,1)); line-height:calc(1.55 * var(--lhmul,1)); }
   .combo-items li::before{ content:"- "; }
   .combo-price{ align-self:flex-end; text-align:right; margin-top:1.4cqw; flex:none; }
   .combo-price .price-line{ display:flex; gap:1.2cqw; justify-content:flex-end; align-items:baseline; white-space:nowrap; }
   .combo-price .lbl{ font-weight:700; }
-  .combo-price .orig{ font-size:2.7cqw; }
-  .combo-price .special{ font-size:3.9cqw; font-weight:800; color:var(--accent,#a8542f); margin-top:0.5cqw; }
+  .combo-price .orig{ font-size:calc(2.7cqw * var(--fontscale,1)); }
+  .combo-price .special{ font-size:calc(3.9cqw * var(--fontscale,1)); font-weight:800; color:var(--accent,#a8542f); margin-top:0.5cqw; }
   .combo-price .val{ font-variant-numeric:tabular-nums; }
 
   /* specs template */
   .cardface.specs{ justify-content:flex-start; padding:4.6cqw; }
   .specs-logo{ height:calc(6cqw * var(--logoscale,1)); max-width:calc(44cqw * var(--logoscale,1)); width:auto; object-fit:contain; margin-bottom:2.6cqw; align-self:flex-start; }
-  .specs-headline p{ margin:0 0 0.8cqw; font-size:3.7cqw; font-weight:700; line-height:calc(1.25 * var(--lhmul,1)); text-wrap:balance; }
-  .specs-headline p.sub{ font-weight:500; font-size:2.7cqw; }
+  .specs-headline p{ margin:0 0 0.8cqw; font-size:calc(3.7cqw * var(--fontscale,1)); font-weight:700; line-height:calc(1.25 * var(--lhmul,1)); text-wrap:balance; }
+  .specs-headline p.sub{ font-weight:500; font-size:calc(2.7cqw * var(--fontscale,1)); }
   .specs-headline .hl{ color:var(--accent,#c0392b); }
   .specs-rule{ border:none; border-top:1px solid #333; margin:2.2cqw 0; }
   .specs-rows{ flex:1; display:flex; flex-direction:column; overflow:hidden; min-height:0; }
   .specs-row{ display:flex; justify-content:space-between; align-items:center; gap:2.4cqw; padding:1.5cqw 1.8cqw; flex:1; min-height:0; }
   .specs-row.alt{ background:var(--rowshade,#ece5da); }
-  .specs-row-name{ font-size:3.4cqw; font-weight:700; line-height:calc(1.2 * var(--lhmul,1)); margin-bottom:0.4cqw; }
-  .specs-row-spec{ font-size:2cqw; color:#4a4642; line-height:calc(1.35 * var(--lhmul,1)); }
-  .specs-row-price{ font-size:4.4cqw; font-weight:800; font-variant-numeric:tabular-nums; white-space:nowrap; line-height:1; }
+  .specs-row-name{ font-size:calc(3.4cqw * var(--fontscale,1)); font-weight:700; line-height:calc(1.2 * var(--lhmul,1)); margin-bottom:0.4cqw; }
+  .specs-row-spec{ font-size:calc(2cqw * var(--fontscale,1)); color:#4a4642; line-height:calc(1.35 * var(--lhmul,1)); }
+  .specs-row-price{ font-size:calc(4.4cqw * var(--fontscale,1)); font-weight:800; font-variant-numeric:tabular-nums; white-space:nowrap; line-height:1; }
 
   /* compare template */
   .cardface.compare{ align-items:center; justify-content:center; text-align:center; gap:0.9cqw; padding:4.6cqw; }
   .compare-logo{ height:calc(9cqw * var(--logoscale,1)); max-width:calc(55cqw * var(--logoscale,1)); width:auto; object-fit:contain; margin-bottom:0.8cqw; }
-  .compare-lines p{ margin:0.35cqw 0; font-size:5.3cqw; font-weight:500; line-height:calc(1.22 * var(--lhmul,1)); text-wrap:balance; }
+  .compare-lines p{ margin:0.35cqw 0; font-size:calc(5.3cqw * var(--fontscale,1)); font-weight:500; line-height:calc(1.22 * var(--lhmul,1)); text-wrap:balance; }
   .compare-lines strong{ font-weight:800; font-size:1.08em; }
-  .compare-model{ font-size:2.9cqw; color:#57524c; margin:0.9cqw 0 0; }
+  .compare-model{ font-size:calc(2.9cqw * var(--fontscale,1)); color:#57524c; margin:0.9cqw 0 0; }
   .compare-price{ margin-top:1.6cqw; }
-  .compare-price .orig{ font-size:3.3cqw; margin:0 0 0.7cqw; font-variant-numeric:tabular-nums; }
-  .compare-price .special{ font-size:3.9cqw; font-weight:700; color:var(--accent,#d3311f); margin:0; font-variant-numeric:tabular-nums; }
+  .compare-price .orig{ font-size:calc(3.3cqw * var(--fontscale,1)); margin:0 0 0.7cqw; font-variant-numeric:tabular-nums; }
+  .compare-price .special{ font-size:calc(3.9cqw * var(--fontscale,1)); font-weight:700; color:var(--accent,#d3311f); margin:0; font-variant-numeric:tabular-nums; }
   .compare-price .special .big{ font-size:1.5em; font-weight:800; }
 
   /* ---------- print (prints exactly what the A4 preview shows) ---------- */
@@ -224,6 +224,10 @@
       </div>
       <label class="inline" style="margin-top:4px;">
         <input type="checkbox" id="cutGuides"> <span class="tiny">顯示裁切線（列印時為淡灰虛線）</span>
+      </label>
+      <label class="field" style="margin-top:10px;">
+        <span class="lbl">文字大小 <span id="fontScaleVal" class="tiny"></span></span>
+        <input type="range" id="fontScale" min="0.6" max="1.6" step="0.05" value="1" style="width:100%;">
       </label>
       <label class="field" style="margin-top:10px;">
         <span class="lbl">文字行距 <span id="lineHeightScaleVal" class="tiny"></span></span>
@@ -403,12 +407,12 @@
       comboOrigLabel:"原價", comboOrigPrice:"371,000",
       comboSpecialLabel:"專案價", comboSpecialPrice:"258,000",
       comboAccent:"#a8542f",
-      comboLogo1Scale:1, comboLogo2Scale:1, lineHeightScale:1
+      comboLogo1Scale:1, comboLogo2Scale:1, lineHeightScale:1, fontScale:1
     },
     specs: {
       template:"specs",
       size:{w:11,h:15}, copies:1, cutGuides:false,
-      specsBrand:"samsung", specsBrandUpload:"", specsLogoScale:1, lineHeightScale:1,
+      specsBrand:"samsung", specsBrandUpload:"", specsLogoScale:1, lineHeightScale:1, fontScale:1,
       specsHeadline1:"4K Neo QLED 量子電視 QN87D系列",
       specsHighlight:"QN87D",
       specsHeadline2:"量子 Mini LED 立體景深強化/AI量子程式演算科技",
@@ -424,7 +428,7 @@
     compare: {
       template:"compare",
       size:{w:7,h:4}, copies:1, cutGuides:false,
-      compareShowLogo:false, compareBrand:"", compareBrandUpload:"", compareLogoScale:1, lineHeightScale:1,
+      compareShowLogo:false, compareBrand:"", compareBrandUpload:"", compareLogoScale:1, lineHeightScale:1, fontScale:1,
       compareLines:"Devialet\n**Phantom I 103dB**\n無線揚聲器｜霧黑色",
       compareModel:"",
       compareOrigLabel:"原價", compareOrigPrice:"82,990", compareOrigUnit:"元",
@@ -500,7 +504,7 @@
     }
     var itemsHTML = (s.items||[]).filter(function(i){return i && i.trim()!=="";})
       .map(function(i){ return "<li>"+fmt(i)+"</li>"; }).join("");
-    return '<div class="cardface combo" style="--accent:'+esc(s.comboAccent)+';--lhmul:'+(s.lineHeightScale||1)+'">'
+    return '<div class="cardface combo" style="--accent:'+esc(s.comboAccent)+';--lhmul:'+(s.lineHeightScale||1)+';--fontscale:'+(s.fontScale||1)+'">'
       + logosHTML
       + '<h1 class="combo-headline">'+fmt(s.comboHeadline)+'</h1>'
       + '<ul class="combo-items">'+itemsHTML+'</ul>'
@@ -530,7 +534,7 @@
         + '<div class="specs-row-price">'+esc(s.specsCurrency)+money(r.price)+'</div>'
       + '</div>';
     }).join("");
-    return '<div class="cardface specs" style="--accent:'+esc(s.specsAccent)+';--rowshade:'+esc(s.specsRowShade)+';--lhmul:'+(s.lineHeightScale||1)+'">'
+    return '<div class="cardface specs" style="--accent:'+esc(s.specsAccent)+';--rowshade:'+esc(s.specsRowShade)+';--lhmul:'+(s.lineHeightScale||1)+';--fontscale:'+(s.fontScale||1)+'">'
       + logo
       + '<div class="specs-headline"><p>'+hl1+'</p><p class="sub">'+fmt(s.specsHeadline2)+'</p></div>'
       + '<hr class="specs-rule">'
@@ -543,7 +547,7 @@
     var lines = (s.compareLines||"").split("\n").filter(function(l){return l.trim()!=="";})
       .map(function(l){ return "<p>"+fmt(l)+"</p>"; }).join("");
     var modelHTML = (s.compareModel||"").trim() ? '<p class="compare-model">'+fmt(s.compareModel)+'</p>' : "";
-    return '<div class="cardface compare" style="--accent:'+esc(s.compareAccent)+';--lhmul:'+(s.lineHeightScale||1)+'">'
+    return '<div class="cardface compare" style="--accent:'+esc(s.compareAccent)+';--lhmul:'+(s.lineHeightScale||1)+';--fontscale:'+(s.fontScale||1)+'">'
       + logo
       + '<div class="compare-lines">'+lines+'</div>'
       + modelHTML
@@ -735,6 +739,8 @@
     document.getElementById("sizePreset").value = presetMatch || "custom";
     document.getElementById("copies").value = state.copies;
     document.getElementById("cutGuides").checked = !!state.cutGuides;
+    document.getElementById("fontScale").value = state.fontScale || 1;
+    document.getElementById("fontScaleVal").textContent = (state.fontScale || 1).toFixed(2)+"×";
     document.getElementById("lineHeightScale").value = state.lineHeightScale || 1;
     document.getElementById("lineHeightScaleVal").textContent = (state.lineHeightScale || 1).toFixed(2)+"×";
 
@@ -816,6 +822,11 @@
       if (!el) return;
       var idx = +el.dataset.cardIdx;
       if (!isNaN(idx) && idx !== activeIndex) selectCard(idx);
+    });
+    document.getElementById("fontScale").addEventListener("input", function(){
+      state.fontScale = parseFloat(this.value) || 1;
+      document.getElementById("fontScaleVal").textContent = state.fontScale.toFixed(2)+"×";
+      renderCard();
     });
     document.getElementById("lineHeightScale").addEventListener("input", function(){
       state.lineHeightScale = parseFloat(this.value) || 1;
