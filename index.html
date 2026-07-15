@@ -345,6 +345,10 @@
       <div class="grp">預覽縮放
         <input type="range" id="zoom" min="0.5" max="4" step="0.1" value="1">
       </div>
+      <div class="grp">標籤間距
+        <input type="range" id="pageGap" min="0" max="2" step="0.1" value="0.4">
+        <span id="pageGapVal" class="tiny"></span>
+      </div>
       <button type="button" class="btn primary" id="printBtn">列印 / 存成 PDF</button>
     </div>
     <div class="preview-shell">
@@ -440,6 +444,7 @@
   var deck = null;       // {cards:[cardState, ...]}
   var activeIndex = 0;
   var state = null;      // reference to deck.cards[activeIndex] (the card being edited)
+  var pageGap = 0.4;     // cm between cards on the A4 sheet (whole-deck setting)
   var STORAGE_KEY = "priceTagGeneratorState_v1";
   var MAX_CARDS = 200;
 
@@ -451,19 +456,20 @@
       if (raw){
         var parsed = JSON.parse(raw);
         if (parsed && Array.isArray(parsed.cards) && parsed.cards.length){
-          return {cards:parsed.cards, activeIndex: Math.min(Math.max(0,parsed.activeIndex||0), parsed.cards.length-1)};
+          return {cards:parsed.cards, activeIndex: Math.min(Math.max(0,parsed.activeIndex||0), parsed.cards.length-1),
+            gap: (typeof parsed.gap === "number" ? parsed.gap : 0.4)};
         }
         // migrate old single-card save format
         if (parsed && parsed.template && DEFAULTS[parsed.template]){
-          return {cards:[parsed], activeIndex:0};
+          return {cards:[parsed], activeIndex:0, gap:0.4};
         }
       }
     }catch(e){}
-    return {cards:[clone(DEFAULTS.combo)], activeIndex:0};
+    return {cards:[clone(DEFAULTS.combo)], activeIndex:0, gap:0.4};
   }
 
   function saveState(){
-    try{ localStorage.setItem(STORAGE_KEY, JSON.stringify({cards:deck.cards, activeIndex:activeIndex})); }catch(e){}
+    try{ localStorage.setItem(STORAGE_KEY, JSON.stringify({cards:deck.cards, activeIndex:activeIndex, gap:pageGap})); }catch(e){}
   }
 
   function esc(s){
@@ -576,7 +582,7 @@
   // Packs every printed instance (each card x its copies) into A4 pages, wrapping rows/pages
   // the same way the print layout will, so the on-screen preview is what actually prints.
   function buildPages(){
-    var margin = 1, gap = 0.4;
+    var margin = 1, gap = pageGap;
     var usableW = 21 - margin*2, usableH = 29.7 - margin*2;
     var items = [];
     deck.cards.forEach(function(c, ci){
@@ -604,7 +610,7 @@
         var cls = "card" + (c.cutGuides ? " cut-guide" : "") + (it.cardIndex===activeIndex ? " card-active" : "");
         return '<div class="'+cls+'" data-card-idx="'+it.cardIndex+'" style="width:'+c.size.w+'cm;height:'+c.size.h+'cm;">'+buildCardInner(c)+'</div>';
       }).join("");
-      return '<div class="a4-sheet"><div class="a4-inner">'+inner+'</div></div>';
+      return '<div class="a4-sheet"><div class="a4-inner" style="gap:'+pageGap+'cm">'+inner+'</div></div>';
     }).join("");
     document.getElementById("previewPages").innerHTML = html;
 
@@ -858,7 +864,7 @@
       state.cutGuides = this.checked; renderCard();
     });
     document.getElementById("fitPageBtn").addEventListener("click", function(){
-      var gap = 0.4, margin = 1.0;
+      var gap = pageGap, margin = 1.0;
       var usableW = 21 - margin*2, usableH = 29.7 - margin*2;
       var cols = Math.max(1, Math.floor((usableW + gap) / (state.size.w + gap)));
       var rows = Math.max(1, Math.floor((usableH + gap) / (state.size.h + gap)));
@@ -867,6 +873,11 @@
       renderCard();
     });
     document.getElementById("zoom").addEventListener("input", applyZoom);
+    document.getElementById("pageGap").addEventListener("input", function(){
+      pageGap = parseFloat(this.value) || 0;
+      document.getElementById("pageGapVal").textContent = pageGap.toFixed(1)+"cm";
+      renderCard();
+    });
     document.getElementById("printBtn").addEventListener("click", function(){ window.print(); });
 
     /* ---- combo ---- */
@@ -970,9 +981,12 @@
     var loaded = loadDeck();
     deck = {cards: loaded.cards};
     activeIndex = loaded.activeIndex;
+    pageGap = loaded.gap;
     var hashTpl = (location.hash||"").replace("#","");
     if (DEFAULTS[hashTpl]){ deck = {cards:[clone(DEFAULTS[hashTpl])]}; activeIndex = 0; }
     state = deck.cards[activeIndex];
+    document.getElementById("pageGap").value = pageGap;
+    document.getElementById("pageGapVal").textContent = pageGap.toFixed(1)+"cm";
     bindStatic();
     populateForm();
     renderCard();
