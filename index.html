@@ -1,0 +1,974 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<title>價格牌產生器｜映象音響</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root{
+    --ui-bg:#f4f2ee;
+    --ui-panel:#ffffff;
+    --ui-line:#e2ddd4;
+    --ui-ink:#221f1c;
+    --ui-sub:#7a7168;
+    --ui-accent:#a8542f;
+    --ui-accent-ink:#ffffff;
+  }
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; background:var(--ui-bg); color:var(--ui-ink);
+    font-family:"Segoe UI","Noto Sans TC","Microsoft JhengHei",Arial,sans-serif; }
+
+  /* ---------- layout shell ---------- */
+  .app{ display:grid; grid-template-columns: 380px 1fr; min-height:100vh; }
+  .panel{ background:var(--ui-panel); border-right:1px solid var(--ui-line);
+    padding:20px 20px 80px; overflow-y:auto; max-height:100vh; }
+  .stage{ padding:28px; display:flex; flex-direction:column; align-items:center; gap:20px; }
+
+  .brand-row{ display:flex; align-items:baseline; gap:8px; margin-bottom:18px; }
+  .brand-row h1{ font-size:17px; font-weight:800; margin:0; letter-spacing:0.01em; }
+  .brand-row span{ font-size:11px; color:var(--ui-sub); letter-spacing:0.06em; }
+
+  fieldset{ border:1px solid var(--ui-line); border-radius:8px; padding:14px 14px 16px;
+    margin:0 0 14px; }
+  fieldset legend{ font-size:12px; font-weight:700; color:var(--ui-accent);
+    padding:0 6px; letter-spacing:0.03em; }
+
+  /* keep the price-tag list pinned to the top of the panel while the form below scrolls */
+  #cardListFieldset{ position:sticky; top:-20px; z-index:5; background:var(--ui-panel);
+    margin:-20px -20px 14px; padding:20px 20px 14px; border-left:none; border-right:none; border-top:none;
+    border-radius:0 0 8px 8px; box-shadow:0 6px 12px -8px rgba(0,0,0,.18); }
+
+  label.field{ display:block; margin:0 0 10px; }
+  label.field:last-child{ margin-bottom:0; }
+  label.field .lbl{ display:block; font-size:11.5px; color:var(--ui-sub); margin-bottom:4px;
+    letter-spacing:0.02em; }
+  input[type=text], input[type=number], textarea, select{
+    width:100%; font:inherit; font-size:13px; padding:7px 9px; border:1px solid #d8d2c8;
+    border-radius:6px; background:#fff; color:var(--ui-ink);
+  }
+  input:focus, textarea:focus, select:focus{ outline:2px solid var(--ui-accent); outline-offset:1px; }
+  textarea{ resize:vertical; min-height:56px; line-height:1.5; }
+  input[type=color]{ width:44px; height:30px; padding:2px; border:1px solid #d8d2c8; border-radius:6px; background:#fff; }
+  .row2{ display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  .row3{ display:grid; grid-template-columns:1fr 1fr auto; gap:8px; align-items:end; }
+  .inline{ display:flex; gap:8px; align-items:center; }
+  .tiny{ font-size:11px; color:var(--ui-sub); }
+
+  .tabbar{ display:flex; gap:6px; margin-bottom:16px; }
+  .tabbar button{ flex:1; padding:9px 4px; font-size:12.5px; font-weight:700; border-radius:7px;
+    border:1px solid #d8d2c8; background:#fff; color:var(--ui-sub); cursor:pointer; }
+  .tabbar button.active{ background:var(--ui-accent); border-color:var(--ui-accent); color:#fff; }
+
+  .listbox{ display:flex; flex-direction:column; gap:6px; margin-bottom:8px; }
+  .row-item{ display:flex; gap:6px; align-items:flex-start; }
+  .row-item input, .row-item textarea{ flex:1; }
+  .btn-remove{ flex:0 0 auto; width:28px; height:28px; border-radius:6px; border:1px solid #d8d2c8;
+    background:#fff; color:#a33; font-size:15px; line-height:1; cursor:pointer; }
+  .btn-add{ font-size:12px; font-weight:700; color:var(--ui-accent); background:#fbf1ea;
+    border:1px dashed var(--ui-accent); border-radius:6px; padding:7px; cursor:pointer; width:100%; }
+  .row-group{ border:1px solid #e6e1d8; border-radius:7px; padding:8px; background:#fbfaf8; }
+  .row-group + .row-group{ margin-top:6px; }
+  .row-group .lbl{ font-size:10.5px; }
+
+  .card-item{ display:grid; grid-template-columns:18px 1fr auto 22px 22px; align-items:center; gap:6px; padding:7px 8px;
+    border:1px solid #e2ddd4; border-radius:6px; cursor:pointer; font-size:12px; background:#fff; }
+  .card-item:hover{ border-color:var(--ui-accent); }
+  .card-item.active{ border-color:var(--ui-accent); background:#fbf1ea; }
+  .card-item-idx{ flex:0 0 auto; width:18px; height:18px; border-radius:50%; background:#efe9e0; color:#7a7168;
+    font-size:10.5px; display:flex; align-items:center; justify-content:center; font-weight:700; }
+  .card-item.active .card-item-idx{ background:var(--ui-accent); color:#fff; }
+  .card-item-label{ flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .card-item-copies{ flex:0 0 auto; font-size:10.5px; color:var(--ui-sub); font-variant-numeric:tabular-nums; }
+  .card-item-dup, .card-item-del{ flex:0 0 auto; width:22px; height:22px; border-radius:5px; border:1px solid #d8d2c8;
+    background:#fff; font-size:12px; line-height:1; cursor:pointer; padding:0; }
+  .card-item-del{ color:#a33; }
+  .total-summary{ font-size:11.5px; color:var(--ui-sub); margin:8px 0 0; }
+
+  .btn{ font-size:13px; font-weight:700; padding:9px 14px; border-radius:7px; border:1px solid #d8d2c8;
+    background:#fff; color:var(--ui-ink); cursor:pointer; }
+  .btn.primary{ background:var(--ui-ink); border-color:var(--ui-ink); color:#fff; }
+  .btn.ghost{ background:transparent; }
+  .btn:hover{ filter:brightness(0.97); }
+
+  .hidden{ display:none !important; }
+
+  /* ---------- stage / preview ---------- */
+  .toolbar{ display:flex; flex-wrap:wrap; gap:10px; align-items:center; justify-content:center;
+    background:#fff; border:1px solid var(--ui-line); border-radius:9px; padding:10px 14px; width:100%; max-width:960px; }
+  .toolbar .grp{ display:flex; align-items:center; gap:6px; font-size:12px; color:var(--ui-sub); }
+  .toolbar input[type=range]{ width:120px; }
+  .preview-shell{ background:repeating-conic-gradient(#eceae5 0% 25%, #f6f4f0 0% 50%) 50% / 18px 18px;
+    border:1px solid var(--ui-line); border-radius:10px; padding:40px; display:flex; align-items:flex-start; justify-content:center;
+    min-height:320px; max-height:78vh; overflow:auto; width:100%; max-width:960px; }
+  .pages-col{ display:flex; flex-direction:column; align-items:center; gap:24px; }
+  .a4-sheet{ width:21cm; height:29.7cm; background:#fff; box-shadow:0 8px 24px rgba(0,0,0,.14); flex:none; position:relative; }
+  .a4-inner{ position:absolute; inset:1cm; display:flex; flex-wrap:wrap; align-content:flex-start; gap:0.4cm; overflow:hidden; }
+
+  .print-hint{ font-size:12px; color:var(--ui-sub); max-width:900px; text-align:center; }
+  .page-count{ font-size:11.5px; color:var(--ui-sub); text-align:center; }
+
+  /* ---------- card design (shared by preview + print) ---------- */
+  .card{
+    position:relative; box-sizing:border-box; overflow:hidden;
+    background:#fff; box-shadow:0 8px 24px rgba(0,0,0,.12); flex:none;
+    border:0.055cm solid #161311;
+    container-type:inline-size; container-name:card;
+    font-family:"Noto Sans TC","Microsoft JhengHei","Segoe UI",Arial,sans-serif;
+    color:#161311; cursor:pointer;
+  }
+  .card.cut-guide{ outline:1px dashed #9b9b9b; outline-offset:4px; }
+  .card.card-active{ box-shadow:0 0 0 2px var(--ui-accent), 0 8px 24px rgba(0,0,0,.12); }
+  .cardface{ width:100%; height:100%; box-sizing:border-box; padding:6.2cqw; display:flex; flex-direction:column; }
+
+  /* combo template */
+  .cardface.combo{ justify-content:flex-start; padding:4.6cqw; }
+  .combo-logos{ display:flex; align-items:center; gap:3cqw; margin-bottom:3cqw; min-height:8cqw; }
+  .combo-logo{ height:calc(8cqw * var(--logoscale,1)); max-width:calc(34cqw * var(--logoscale,1)); width:auto; object-fit:contain; }
+  .logo-divider{ width:1px; align-self:stretch; background:#9b9b9b; }
+  .combo-headline{ font-size:4.5cqw; font-weight:800; line-height:calc(1.18 * var(--lhmul,1)); margin:0 0 2.6cqw; text-wrap:balance; }
+  .combo-items{ list-style:none; margin:0; padding:0; flex:1; min-height:0; overflow:hidden; }
+  .combo-items li{ font-size:2.55cqw; line-height:calc(1.55 * var(--lhmul,1)); }
+  .combo-items li::before{ content:"- "; }
+  .combo-price{ align-self:flex-end; text-align:right; margin-top:1.4cqw; flex:none; }
+  .combo-price .price-line{ display:flex; gap:1.2cqw; justify-content:flex-end; align-items:baseline; white-space:nowrap; }
+  .combo-price .lbl{ font-weight:700; }
+  .combo-price .orig{ font-size:2.7cqw; }
+  .combo-price .special{ font-size:3.9cqw; font-weight:800; color:var(--accent,#a8542f); margin-top:0.5cqw; }
+  .combo-price .val{ font-variant-numeric:tabular-nums; }
+
+  /* specs template */
+  .cardface.specs{ justify-content:flex-start; padding:4.6cqw; }
+  .specs-logo{ height:calc(6cqw * var(--logoscale,1)); max-width:calc(44cqw * var(--logoscale,1)); width:auto; object-fit:contain; margin-bottom:2.6cqw; align-self:flex-start; }
+  .specs-headline p{ margin:0 0 0.8cqw; font-size:3.7cqw; font-weight:700; line-height:calc(1.25 * var(--lhmul,1)); text-wrap:balance; }
+  .specs-headline p.sub{ font-weight:500; font-size:2.7cqw; }
+  .specs-headline .hl{ color:var(--accent,#c0392b); }
+  .specs-rule{ border:none; border-top:1px solid #333; margin:2.2cqw 0; }
+  .specs-rows{ flex:1; display:flex; flex-direction:column; overflow:hidden; min-height:0; }
+  .specs-row{ display:flex; justify-content:space-between; align-items:center; gap:2.4cqw; padding:1.5cqw 1.8cqw; flex:1; min-height:0; }
+  .specs-row.alt{ background:var(--rowshade,#ece5da); }
+  .specs-row-name{ font-size:3.4cqw; font-weight:700; line-height:calc(1.2 * var(--lhmul,1)); margin-bottom:0.4cqw; }
+  .specs-row-spec{ font-size:2cqw; color:#4a4642; line-height:calc(1.35 * var(--lhmul,1)); }
+  .specs-row-price{ font-size:4.4cqw; font-weight:800; font-variant-numeric:tabular-nums; white-space:nowrap; line-height:1; }
+
+  /* compare template */
+  .cardface.compare{ align-items:center; justify-content:center; text-align:center; gap:0.9cqw; padding:4.6cqw; }
+  .compare-logo{ height:calc(9cqw * var(--logoscale,1)); max-width:calc(55cqw * var(--logoscale,1)); width:auto; object-fit:contain; margin-bottom:0.8cqw; }
+  .compare-lines p{ margin:0.35cqw 0; font-size:5.3cqw; font-weight:500; line-height:calc(1.22 * var(--lhmul,1)); text-wrap:balance; }
+  .compare-lines strong{ font-weight:800; font-size:1.08em; }
+  .compare-model{ font-size:2.9cqw; color:#57524c; margin:0.9cqw 0 0; }
+  .compare-price{ margin-top:1.6cqw; }
+  .compare-price .orig{ font-size:3.3cqw; margin:0 0 0.7cqw; font-variant-numeric:tabular-nums; }
+  .compare-price .special{ font-size:3.9cqw; font-weight:700; color:var(--accent,#d3311f); margin:0; font-variant-numeric:tabular-nums; }
+  .compare-price .special .big{ font-size:1.5em; font-weight:800; }
+
+  /* ---------- print (prints exactly what the A4 preview shows) ---------- */
+  @media print{
+    @page{ size:A4; margin:0; }
+    body *{ visibility:hidden; }
+    #previewPages, #previewPages *{ visibility:visible; }
+    #previewPages{ position:absolute; top:0; left:0; zoom:1 !important; display:flex !important; flex-direction:column; gap:0; }
+    .a4-sheet{ box-shadow:none !important; page-break-after:always; break-after:page; }
+    .a4-sheet:last-child{ page-break-after:auto; break-after:auto; }
+    .card{ box-shadow:none !important; break-inside:avoid; }
+    .card.card-active{ box-shadow:none !important; }
+    *{ -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important; color-adjust:exact !important; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ============ LEFT: FORM PANEL ============ -->
+  <aside class="panel">
+    <div class="brand-row">
+      <h1>價格牌產生器</h1>
+      <span>映象音響 · 門市自助更新工具</span>
+    </div>
+
+    <fieldset id="cardListFieldset">
+      <legend>價格牌清單</legend>
+      <div class="listbox" id="cardList"></div>
+      <button type="button" class="btn-add" id="addCardBtn">+ 新增一張價格牌</button>
+      <p class="total-summary" id="totalSummary"></p>
+    </fieldset>
+
+    <fieldset>
+      <legend>版型（套用於目前選取的卡片）</legend>
+      <div class="tabbar" id="templateTabs">
+        <button type="button" data-tpl="combo">商品組合卡</button>
+        <button type="button" data-tpl="specs">規格價目表</button>
+        <button type="button" data-tpl="compare">單品比價卡</button>
+      </div>
+      <button type="button" class="btn ghost" id="resetSampleBtn" style="width:100%;">重設為此版型範例內容</button>
+    </fieldset>
+
+    <fieldset>
+      <legend>此張卡片尺寸與列印份數</legend>
+      <label class="field">
+        <span class="lbl">尺寸預設</span>
+        <select id="sizePreset">
+          <option value="15x10">15 × 10 cm（橫式・組合卡常用）</option>
+          <option value="11x15">11 × 15 cm（直式・規格表常用）</option>
+          <option value="7x4">7 × 4 cm（橫式・小卡常用）</option>
+          <option value="7.5x4">7.5 × 4 cm（橫式・小卡常用）</option>
+          <option value="custom">自訂尺寸</option>
+        </select>
+      </label>
+      <div class="row2">
+        <label class="field"><span class="lbl">寬（cm）</span><input type="number" id="sizeW" step="0.1" min="2" max="29"></label>
+        <label class="field"><span class="lbl">高（cm）</span><input type="number" id="sizeH" step="0.1" min="2" max="29"></label>
+      </div>
+      <div class="row2">
+        <label class="field"><span class="lbl">此張列印份數</span><input type="number" id="copies" min="1" max="120" value="1"></label>
+        <label class="field" style="align-self:end;"><button type="button" class="btn" id="fitPageBtn" style="width:100%;">此張填滿A4</button></label>
+      </div>
+      <label class="inline" style="margin-top:4px;">
+        <input type="checkbox" id="cutGuides"> <span class="tiny">顯示裁切線（列印時為淡灰虛線）</span>
+      </label>
+      <label class="field" style="margin-top:10px;">
+        <span class="lbl">文字行距 <span id="lineHeightScaleVal" class="tiny"></span></span>
+        <input type="range" id="lineHeightScale" min="0.8" max="1.6" step="0.05" value="1" style="width:100%;">
+      </label>
+    </fieldset>
+
+    <!-- ===== COMBO FORM ===== -->
+    <div id="formCombo">
+      <fieldset>
+        <legend>品牌 Logo（可選兩個）</legend>
+        <div class="row-group">
+          <label class="field"><span class="lbl">品牌 1</span><select id="comboBrand1"></select></label>
+          <label class="field"><span class="lbl">或上傳圖片（取代上方選擇）</span><input type="file" id="comboBrand1Upload" accept="image/*"></label>
+          <label class="field"><span class="lbl">Logo 大小 <span id="comboLogo1ScaleVal" class="tiny"></span></span>
+            <input type="range" id="comboLogo1Scale" min="0.5" max="2" step="0.05" value="1" style="width:100%;"></label>
+        </div>
+        <div class="row-group">
+          <label class="field"><span class="lbl">品牌 2（無則留空）</span><select id="comboBrand2"></select></label>
+          <label class="field"><span class="lbl">或上傳圖片（取代上方選擇）</span><input type="file" id="comboBrand2Upload" accept="image/*"></label>
+          <label class="field"><span class="lbl">Logo 大小 <span id="comboLogo2ScaleVal" class="tiny"></span></span>
+            <input type="range" id="comboLogo2Scale" min="0.5" max="2" step="0.05" value="1" style="width:100%;"></label>
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend>商品內容</legend>
+        <label class="field"><span class="lbl">標題（可用 **文字** 加粗）</span><input type="text" id="comboHeadline"></label>
+        <div class="lbl" style="margin-bottom:6px;">項目清單</div>
+        <div class="listbox" id="comboItemsList"></div>
+        <button type="button" class="btn-add" id="comboAddItem">+ 新增項目</button>
+      </fieldset>
+      <fieldset>
+        <legend>價格</legend>
+        <div class="row2">
+          <label class="field"><span class="lbl">原價標籤</span><input type="text" id="comboOrigLabel"></label>
+          <label class="field"><span class="lbl">原價金額</span><input type="text" id="comboOrigPrice"></label>
+        </div>
+        <div class="row2">
+          <label class="field"><span class="lbl">特價標籤</span><input type="text" id="comboSpecialLabel"></label>
+          <label class="field"><span class="lbl">特價金額</span><input type="text" id="comboSpecialPrice"></label>
+        </div>
+        <label class="field"><span class="lbl">強調色</span><input type="color" id="comboAccent"></label>
+      </fieldset>
+    </div>
+
+    <!-- ===== SPECS FORM ===== -->
+    <div id="formSpecs">
+      <fieldset>
+        <legend>品牌 Logo</legend>
+        <label class="field"><span class="lbl">品牌</span><select id="specsBrand"></select></label>
+        <label class="field"><span class="lbl">或上傳圖片（取代上方選擇）</span><input type="file" id="specsBrandUpload" accept="image/*"></label>
+        <label class="field"><span class="lbl">Logo 大小 <span id="specsLogoScaleVal" class="tiny"></span></span>
+          <input type="range" id="specsLogoScale" min="0.5" max="2" step="0.05" value="1" style="width:100%;"></label>
+      </fieldset>
+      <fieldset>
+        <legend>標題</legend>
+        <label class="field"><span class="lbl">標題第一行</span><input type="text" id="specsHeadline1"></label>
+        <label class="field"><span class="lbl">標題中要強調的文字（會套用強調色）</span><input type="text" id="specsHighlight"></label>
+        <label class="field"><span class="lbl">標題第二行（副標）</span><input type="text" id="specsHeadline2"></label>
+        <label class="field"><span class="lbl">價格前綴</span><input type="text" id="specsCurrency"></label>
+      </fieldset>
+      <fieldset>
+        <legend>規格 / 價格列</legend>
+        <div class="listbox" id="specsRowsList"></div>
+        <button type="button" class="btn-add" id="specsAddRow">+ 新增一列</button>
+      </fieldset>
+      <fieldset>
+        <legend>顏色</legend>
+        <div class="row2">
+          <label class="field"><span class="lbl">強調色（標題強調字）</span><input type="color" id="specsAccent"></label>
+          <label class="field"><span class="lbl">隔行底色</span><input type="color" id="specsRowShade"></label>
+        </div>
+      </fieldset>
+    </div>
+
+    <!-- ===== COMPARE FORM ===== -->
+    <div id="formCompare">
+      <fieldset>
+        <legend>品牌 Logo（選用）</legend>
+        <label class="inline" style="margin-bottom:8px;">
+          <input type="checkbox" id="compareShowLogo"> <span class="tiny">顯示品牌 Logo（不勾選則用文字，如 Devialet）</span>
+        </label>
+        <label class="field"><span class="lbl">品牌</span><select id="compareBrand"></select></label>
+        <label class="field"><span class="lbl">或上傳圖片（取代上方選擇）</span><input type="file" id="compareBrandUpload" accept="image/*"></label>
+        <label class="field"><span class="lbl">Logo 大小 <span id="compareLogoScaleVal" class="tiny"></span></span>
+          <input type="range" id="compareLogoScale" min="0.5" max="2" step="0.05" value="1" style="width:100%;"></label>
+      </fieldset>
+      <fieldset>
+        <legend>商品內容</legend>
+        <label class="field"><span class="lbl">置中文字（每行一句，可用 **文字** 加粗放大）</span>
+          <textarea id="compareLines" rows="4"></textarea>
+        </label>
+        <label class="field"><span class="lbl">型號（選用，較小字）</span><input type="text" id="compareModel"></label>
+      </fieldset>
+      <fieldset>
+        <legend>價格</legend>
+        <div class="row3">
+          <label class="field"><span class="lbl">原價標籤</span><input type="text" id="compareOrigLabel"></label>
+          <label class="field"><span class="lbl">原價金額</span><input type="text" id="compareOrigPrice"></label>
+          <label class="field"><span class="lbl">單位</span><input type="text" id="compareOrigUnit"></label>
+        </div>
+        <div class="row3">
+          <label class="field"><span class="lbl">特價標籤</span><input type="text" id="compareSpecialLabel"></label>
+          <label class="field"><span class="lbl">特價金額</span><input type="text" id="compareSpecialPrice"></label>
+          <label class="field"><span class="lbl">單位</span><input type="text" id="compareSpecialUnit"></label>
+        </div>
+        <label class="field"><span class="lbl">強調色</span><input type="color" id="compareAccent"></label>
+      </fieldset>
+    </div>
+  </aside>
+
+  <!-- ============ RIGHT: STAGE ============ -->
+  <main class="stage">
+    <div class="toolbar">
+      <div class="grp">預覽縮放
+        <input type="range" id="zoom" min="0.5" max="4" step="0.1" value="1">
+      </div>
+      <button type="button" class="btn primary" id="printBtn">列印 / 存成 PDF</button>
+    </div>
+    <div class="preview-shell">
+      <div class="pages-col" id="previewPages"></div>
+    </div>
+    <p class="page-count" id="pageCountInfo"></p>
+    <p class="print-hint">畫面上顯示的就是實際會列印出來的 A4 頁面（可直接點卡片切換左側選取）。按「列印」後會把「價格牌清單」中所有卡片依各自的尺寸與份數輸出。列印對話框請選擇「不含邊界」或縮放 100%，以確保尺寸準確。</p>
+  </main>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var BRANDS = [
+    {id:"", name:"（無品牌圖）", file:""},
+    {id:"audiotechnica", name:"Audio-Technica 鐵三角", file:"logos/audiotechnica.png"},
+    {id:"audioquest", name:"AudioQuest", file:"logos/audioquest.png"},
+    {id:"bo", name:"B&O", file:"logos/bo.png"},
+    {id:"bw", name:"B&W", file:"logos/bw.png"},
+    {id:"cado", name:"cado", file:"logos/cado.png"},
+    {id:"cambridge", name:"Cambridge Audio", file:"logos/cambridge.png"},
+    {id:"denon", name:"DENON", file:"logos/denon.png"},
+    {id:"devialet", name:"Devialet", file:"logos/Devialet.png"},
+    {id:"dynaudio", name:"Dynaudio", file:"logos/dynaudio.png"},
+    {id:"hitachi", name:"Hitachi", file:"logos/hitachi.png"},
+    {id:"lg", name:"LG", file:"logos/lg.png"},
+    {id:"linn", name:"Linn", file:"logos/linn.png"},
+    {id:"marantz", name:"Marantz", file:"logos/marantz.png"},
+    {id:"mcintosh", name:"McIntosh", file:"logos/mcintosh.png"},
+    {id:"podspeakers", name:"Podspeakers", file:"logos/podspeakers.png"},
+    {id:"samsung", name:"Samsung 三星", file:"logos/samsung.png"},
+    {id:"sharp", name:"Sharp", file:"logos/sharp.png"},
+    {id:"sonusfaber", name:"Sonus faber", file:"logos/sonusfaber.png"},
+    {id:"sony", name:"SONY", file:"logos/sony.png"},
+    {id:"imageaudio", name:"映象音響 ImageAudio", file:"logos/imageaudio.png"}
+  ];
+
+  var SIZE_PRESETS = {
+    "15x10": {w:15, h:10},
+    "11x15": {w:11, h:15},
+    "7x4":   {w:7,  h:4},
+    "7.5x4": {w:7.5,h:4}
+  };
+
+  var DEFAULTS = {
+    combo: {
+      template:"combo",
+      size:{w:15,h:10}, copies:1, cutGuides:false,
+      comboBrand1:"bw", comboBrand1Upload:"",
+      comboBrand2:"marantz", comboBrand2Upload:"",
+      comboHeadline:"B&W 703 S2 + Marantz model 50+CD50 組合",
+      items:[
+        "B&W 703 S2 一對",
+        "Marantz Model 50 綜合擴大機 一台",
+        "Marantz CD 50n 串流CD唱盤 一台",
+        "AudioQuest 喇叭線 Type 5 2M一對",
+        "AudioQuest 訊號線 Tower RCA-RCA 1.5M 一條"
+      ],
+      comboOrigLabel:"原價", comboOrigPrice:"371,000",
+      comboSpecialLabel:"專案價", comboSpecialPrice:"258,000",
+      comboAccent:"#a8542f",
+      comboLogo1Scale:1, comboLogo2Scale:1, lineHeightScale:1
+    },
+    specs: {
+      template:"specs",
+      size:{w:11,h:15}, copies:1, cutGuides:false,
+      specsBrand:"samsung", specsBrandUpload:"", specsLogoScale:1, lineHeightScale:1,
+      specsHeadline1:"4K Neo QLED 量子電視 QN87D系列",
+      specsHighlight:"QN87D",
+      specsHeadline2:"量子 Mini LED 立體景深強化/AI量子程式演算科技",
+      specsCurrency:"NT $",
+      rows:[
+        {name:"55吋 QA55QN87DAXXZW", spec:"含底座 W 122.8 H 76.9 D 24.4(CM)\n不含底座 W 122.8 H 70.6 D2.69(CM)", price:"54,900"},
+        {name:"65吋 QA65QN87DAXXZW", spec:"含底座 W 144.7 H 89 D 27.5(CM)\n不含底座 W 144.7 H 82.9 D 2.69(CM)", price:"67,900"},
+        {name:"75吋 QA75QN87DAXXZW", spec:"含底座 W 167 H 101.6 D 27.5(CM)\n不含底座 W 167 H 95.8 D2.77(CM)", price:"94,900"},
+        {name:"85吋 QA85QN87DAXXZW", spec:"含底座 W 189.3 H 114 D 31.1(CM)\n不含底座 W 189.3 H 108.2 D2.79(CM)", price:"209,900"}
+      ],
+      specsAccent:"#b5502f", specsRowShade:"#ece5da"
+    },
+    compare: {
+      template:"compare",
+      size:{w:7,h:4}, copies:1, cutGuides:false,
+      compareShowLogo:false, compareBrand:"", compareBrandUpload:"", compareLogoScale:1, lineHeightScale:1,
+      compareLines:"Devialet\n**Phantom I 103dB**\n無線揚聲器｜霧黑色",
+      compareModel:"",
+      compareOrigLabel:"原價", compareOrigPrice:"82,990", compareOrigUnit:"元",
+      compareSpecialLabel:"陳列出清價", compareSpecialPrice:"70,542", compareSpecialUnit:"元",
+      compareAccent:"#d3311f"
+    }
+  };
+
+  var deck = null;       // {cards:[cardState, ...]}
+  var activeIndex = 0;
+  var state = null;      // reference to deck.cards[activeIndex] (the card being edited)
+  var STORAGE_KEY = "priceTagGeneratorState_v1";
+  var MAX_CARDS = 200;
+
+  function clone(o){ return JSON.parse(JSON.stringify(o)); }
+
+  function loadDeck(){
+    try{
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (raw){
+        var parsed = JSON.parse(raw);
+        if (parsed && Array.isArray(parsed.cards) && parsed.cards.length){
+          return {cards:parsed.cards, activeIndex: Math.min(Math.max(0,parsed.activeIndex||0), parsed.cards.length-1)};
+        }
+        // migrate old single-card save format
+        if (parsed && parsed.template && DEFAULTS[parsed.template]){
+          return {cards:[parsed], activeIndex:0};
+        }
+      }
+    }catch(e){}
+    return {cards:[clone(DEFAULTS.combo)], activeIndex:0};
+  }
+
+  function saveState(){
+    try{ localStorage.setItem(STORAGE_KEY, JSON.stringify({cards:deck.cards, activeIndex:activeIndex})); }catch(e){}
+  }
+
+  function esc(s){
+    return String(s === undefined || s === null ? "" : s).replace(/[&<>"']/g, function(c){
+      return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
+    });
+  }
+  function fmt(s){
+    var e = esc(s);
+    e = e.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+    return e;
+  }
+  function money(v){
+    var raw = String(v === undefined || v === null ? "" : v).trim();
+    var n = Number(raw.replace(/,/g,""));
+    if (raw !== "" && Number.isFinite(n)) return n.toLocaleString("en-US");
+    return esc(raw);
+  }
+
+  function brandFile(id){
+    var b = BRANDS.filter(function(x){ return x.id===id; })[0];
+    return b ? b.file : "";
+  }
+  function brandImgTag(id, uploadUrl, cls, scale){
+    var src = uploadUrl || brandFile(id);
+    if (!src) return "";
+    var s = (typeof scale === "number" && scale > 0) ? scale : 1;
+    return '<img src="'+src+'" class="'+cls+'" style="--logoscale:'+s+'" alt="logo">';
+  }
+
+  /* ---------- card builders ---------- */
+  function buildCombo(s){
+    var logo1 = brandImgTag(s.comboBrand1, s.comboBrand1Upload, "combo-logo", s.comboLogo1Scale);
+    var logo2 = brandImgTag(s.comboBrand2, s.comboBrand2Upload, "combo-logo", s.comboLogo2Scale);
+    var logosHTML = "";
+    if (logo1 || logo2){
+      logosHTML = '<div class="combo-logos">'+logo1+(logo1&&logo2?'<span class="logo-divider"></span>':'')+logo2+'</div>';
+    }
+    var itemsHTML = (s.items||[]).filter(function(i){return i && i.trim()!=="";})
+      .map(function(i){ return "<li>"+fmt(i)+"</li>"; }).join("");
+    return '<div class="cardface combo" style="--accent:'+esc(s.comboAccent)+';--lhmul:'+(s.lineHeightScale||1)+'">'
+      + logosHTML
+      + '<h1 class="combo-headline">'+fmt(s.comboHeadline)+'</h1>'
+      + '<ul class="combo-items">'+itemsHTML+'</ul>'
+      + '<div class="combo-price">'
+        + '<div class="price-line orig"><span class="lbl">'+fmt(s.comboOrigLabel)+'</span><span class="val">$'+money(s.comboOrigPrice)+'</span></div>'
+        + '<div class="price-line special"><span class="lbl">'+fmt(s.comboSpecialLabel)+'</span><span class="val">$'+money(s.comboSpecialPrice)+'</span></div>'
+      + '</div>'
+    + '</div>';
+  }
+
+  function buildSpecs(s){
+    var logo = brandImgTag(s.specsBrand, s.specsBrandUpload, "specs-logo", s.specsLogoScale);
+    var hl1 = esc(s.specsHeadline1);
+    var hi = (s.specsHighlight||"").trim();
+    if (hi !== ""){
+      var hiEsc = esc(hi);
+      hl1 = hl1.split(hiEsc).join('<span class="hl">'+hiEsc+'</span>');
+    }
+    hl1 = hl1.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+    var rowsHTML = (s.rows||[]).map(function(r,i){
+      var specHtml = fmt(r.spec||"").replace(/\n/g,"<br>");
+      return '<div class="specs-row '+(i%2===1?'alt':'')+'">'
+        + '<div class="specs-row-text">'
+          + '<div class="specs-row-name">'+fmt(r.name)+'</div>'
+          + '<div class="specs-row-spec">'+specHtml+'</div>'
+        + '</div>'
+        + '<div class="specs-row-price">'+esc(s.specsCurrency)+money(r.price)+'</div>'
+      + '</div>';
+    }).join("");
+    return '<div class="cardface specs" style="--accent:'+esc(s.specsAccent)+';--rowshade:'+esc(s.specsRowShade)+';--lhmul:'+(s.lineHeightScale||1)+'">'
+      + logo
+      + '<div class="specs-headline"><p>'+hl1+'</p><p class="sub">'+fmt(s.specsHeadline2)+'</p></div>'
+      + '<hr class="specs-rule">'
+      + '<div class="specs-rows">'+rowsHTML+'</div>'
+    + '</div>';
+  }
+
+  function buildCompare(s){
+    var logo = s.compareShowLogo ? brandImgTag(s.compareBrand, s.compareBrandUpload, "compare-logo", s.compareLogoScale) : "";
+    var lines = (s.compareLines||"").split("\n").filter(function(l){return l.trim()!=="";})
+      .map(function(l){ return "<p>"+fmt(l)+"</p>"; }).join("");
+    var modelHTML = (s.compareModel||"").trim() ? '<p class="compare-model">'+fmt(s.compareModel)+'</p>' : "";
+    return '<div class="cardface compare" style="--accent:'+esc(s.compareAccent)+';--lhmul:'+(s.lineHeightScale||1)+'">'
+      + logo
+      + '<div class="compare-lines">'+lines+'</div>'
+      + modelHTML
+      + '<div class="compare-price">'
+        + '<p class="orig">'+fmt(s.compareOrigLabel)+' '+money(s.compareOrigPrice)+' '+fmt(s.compareOrigUnit)+'</p>'
+        + '<p class="special">'+fmt(s.compareSpecialLabel)+' <span class="big">'+money(s.compareSpecialPrice)+'</span> '+fmt(s.compareSpecialUnit)+'</p>'
+      + '</div>'
+    + '</div>';
+  }
+
+  function buildCardInner(s){
+    if (s.template==="combo") return buildCombo(s);
+    if (s.template==="specs") return buildSpecs(s);
+    return buildCompare(s);
+  }
+
+  /* ---------- rendering ---------- */
+  function renderCard(){
+    renderPages();
+    applyZoom();
+    saveState();
+    renderCardList();
+    updateTotalSummary();
+  }
+
+  // Packs every printed instance (each card x its copies) into A4 pages, wrapping rows/pages
+  // the same way the print layout will, so the on-screen preview is what actually prints.
+  function buildPages(){
+    var margin = 1, gap = 0.4;
+    var usableW = 21 - margin*2, usableH = 29.7 - margin*2;
+    var items = [];
+    deck.cards.forEach(function(c, ci){
+      var n = Math.max(1, Math.min(200, parseInt(c.copies,10) || 1));
+      for (var i=0; i<n; i++) items.push({cardIndex:ci, card:c});
+    });
+    var pages = [[]];
+    var x=0, y=0, rowH=0;
+    items.forEach(function(it){
+      var w = it.card.size.w, h = it.card.size.h;
+      if (x>0 && x+w > usableW+0.01){ x=0; y+=rowH+gap; rowH=0; }
+      if (y>0 && y+h > usableH+0.01){ pages.push([]); x=0; y=0; rowH=0; }
+      pages[pages.length-1].push(it);
+      x += w+gap;
+      rowH = Math.max(rowH, h);
+    });
+    return pages;
+  }
+
+  function renderPages(){
+    var pages = buildPages();
+    var html = pages.map(function(pageItems){
+      var inner = pageItems.map(function(it){
+        var c = it.card;
+        var cls = "card" + (c.cutGuides ? " cut-guide" : "") + (it.cardIndex===activeIndex ? " card-active" : "");
+        return '<div class="'+cls+'" data-card-idx="'+it.cardIndex+'" style="width:'+c.size.w+'cm;height:'+c.size.h+'cm;">'+buildCardInner(c)+'</div>';
+      }).join("");
+      return '<div class="a4-sheet"><div class="a4-inner">'+inner+'</div></div>';
+    }).join("");
+    document.getElementById("previewPages").innerHTML = html;
+
+    var totalCopies = deck.cards.reduce(function(sum,c){
+      return sum + Math.max(1, Math.min(200, parseInt(c.copies,10) || 1));
+    }, 0);
+    document.getElementById("pageCountInfo").textContent =
+      "共 "+pages.length+" 頁 A4，合計 "+totalCopies+" 張標籤";
+  }
+
+  function updateTotalSummary(){
+    var totalCopies = deck.cards.reduce(function(sum,c){
+      return sum + Math.max(1, Math.min(200, parseInt(c.copies,10) || 1));
+    }, 0);
+    document.getElementById("totalSummary").textContent =
+      "共 "+deck.cards.length+" 種價格牌設計，列印總計 "+totalCopies+" 張標籤";
+  }
+
+  /* ---------- card deck management ---------- */
+  function cardLabel(c){
+    var tplName = c.template==="combo" ? "組合卡" : c.template==="specs" ? "規格表" : "比價卡";
+    var text = "";
+    if (c.template==="combo") text = c.comboHeadline;
+    else if (c.template==="specs") text = c.specsHeadline1;
+    else text = (c.compareLines||"").split("\n")[0];
+    text = (text||"").replace(/\*\*/g,"").trim();
+    return tplName + (text ? "｜"+text : "");
+  }
+
+  function renderCardList(){
+    var box = document.getElementById("cardList");
+    box.innerHTML = deck.cards.map(function(c,i){
+      var copies = Math.max(1, Math.min(200, parseInt(c.copies,10) || 1));
+      return '<div class="card-item'+(i===activeIndex?' active':'')+'" data-idx="'+i+'">'
+        + '<span class="card-item-idx">'+(i+1)+'</span>'
+        + '<span class="card-item-label">'+esc(cardLabel(c))+'</span>'
+        + '<span class="card-item-copies">×'+copies+'</span>'
+        + '<button type="button" class="card-item-dup" data-idx="'+i+'" title="複製此卡">⧉</button>'
+        + '<button type="button" class="card-item-del" data-idx="'+i+'" title="刪除此卡">🗑</button>'
+      + '</div>';
+    }).join("");
+  }
+
+  function selectCard(idx){
+    activeIndex = idx;
+    state = deck.cards[activeIndex];
+    populateForm();
+    renderCard();
+  }
+
+  function addCard(){
+    if (deck.cards.length >= MAX_CARDS) return;
+    var tpl = state ? state.template : "combo";
+    var fresh = clone(DEFAULTS[tpl]);
+    deck.cards.push(fresh);
+    selectCard(deck.cards.length-1);
+  }
+
+  function duplicateCard(idx){
+    if (deck.cards.length >= MAX_CARDS) return;
+    var copy = clone(deck.cards[idx]);
+    deck.cards.splice(idx+1, 0, copy);
+    selectCard(idx+1);
+  }
+
+  function removeCard(idx){
+    if (deck.cards.length <= 1) return;
+    deck.cards.splice(idx, 1);
+    if (activeIndex >= deck.cards.length) activeIndex = deck.cards.length-1;
+    else if (idx < activeIndex) activeIndex -= 1;
+    selectCard(activeIndex);
+  }
+
+  function applyZoom(){
+    var z = document.getElementById("zoom").value;
+    document.getElementById("previewPages").style.zoom = z;
+  }
+
+  /* ---------- brand selects ---------- */
+  function fillBrandSelect(sel, selected){
+    sel.innerHTML = BRANDS.map(function(b){
+      return '<option value="'+esc(b.id)+'"'+(b.id===selected?' selected':'')+'>'+esc(b.name)+'</option>';
+    }).join("");
+  }
+
+  function fileToDataUrl(file, cb){
+    var reader = new FileReader();
+    reader.onload = function(){ cb(reader.result); };
+    reader.readAsDataURL(file);
+  }
+
+  /* ---------- combo dynamic list ---------- */
+  function renderComboItems(){
+    var box = document.getElementById("comboItemsList");
+    box.innerHTML = (state.items||[]).map(function(item, i){
+      return '<div class="row-item">'
+        + '<input type="text" class="combo-item-input" data-idx="'+i+'" value="'+esc(item)+'">'
+        + '<button type="button" class="btn-remove" data-idx="'+i+'">×</button>'
+      + '</div>';
+    }).join("");
+  }
+
+  /* ---------- specs dynamic rows ---------- */
+  function renderSpecsRows(){
+    var box = document.getElementById("specsRowsList");
+    box.innerHTML = (state.rows||[]).map(function(r, i){
+      return '<div class="row-group" data-idx="'+i+'">'
+        + '<label class="field"><span class="lbl">名稱 / 型號</span><input type="text" class="specs-row-name-input" data-idx="'+i+'" value="'+esc(r.name)+'"></label>'
+        + '<label class="field"><span class="lbl">規格說明（可分行）</span><textarea class="specs-row-spec-input" data-idx="'+i+'" rows="2">'+esc(r.spec)+'</textarea></label>'
+        + '<div class="row2">'
+          + '<label class="field"><span class="lbl">價格</span><input type="text" class="specs-row-price-input" data-idx="'+i+'" value="'+esc(r.price)+'"></label>'
+          + '<label class="field" style="align-self:end;"><button type="button" class="btn-remove specs-row-remove" data-idx="'+i+'" style="width:100%;">刪除此列</button></label>'
+        + '</div>'
+      + '</div>';
+    }).join("");
+  }
+
+  /* ---------- populate form from state ---------- */
+  function populateForm(){
+    document.querySelectorAll("#templateTabs button").forEach(function(btn){
+      btn.classList.toggle("active", btn.dataset.tpl === state.template);
+    });
+    document.getElementById("formCombo").classList.toggle("hidden", state.template!=="combo");
+    document.getElementById("formSpecs").classList.toggle("hidden", state.template!=="specs");
+    document.getElementById("formCompare").classList.toggle("hidden", state.template!=="compare");
+
+    document.getElementById("sizeW").value = state.size.w;
+    document.getElementById("sizeH").value = state.size.h;
+    var presetMatch = Object.keys(SIZE_PRESETS).filter(function(k){
+      return SIZE_PRESETS[k].w===state.size.w && SIZE_PRESETS[k].h===state.size.h;
+    })[0];
+    document.getElementById("sizePreset").value = presetMatch || "custom";
+    document.getElementById("copies").value = state.copies;
+    document.getElementById("cutGuides").checked = !!state.cutGuides;
+    document.getElementById("lineHeightScale").value = state.lineHeightScale || 1;
+    document.getElementById("lineHeightScaleVal").textContent = (state.lineHeightScale || 1).toFixed(2)+"×";
+
+    if (state.template==="combo"){
+      fillBrandSelect(document.getElementById("comboBrand1"), state.comboBrand1);
+      fillBrandSelect(document.getElementById("comboBrand2"), state.comboBrand2);
+      document.getElementById("comboLogo1Scale").value = state.comboLogo1Scale || 1;
+      document.getElementById("comboLogo1ScaleVal").textContent = Math.round((state.comboLogo1Scale||1)*100)+"%";
+      document.getElementById("comboLogo2Scale").value = state.comboLogo2Scale || 1;
+      document.getElementById("comboLogo2ScaleVal").textContent = Math.round((state.comboLogo2Scale||1)*100)+"%";
+      document.getElementById("comboHeadline").value = state.comboHeadline;
+      renderComboItems();
+      document.getElementById("comboOrigLabel").value = state.comboOrigLabel;
+      document.getElementById("comboOrigPrice").value = state.comboOrigPrice;
+      document.getElementById("comboSpecialLabel").value = state.comboSpecialLabel;
+      document.getElementById("comboSpecialPrice").value = state.comboSpecialPrice;
+      document.getElementById("comboAccent").value = state.comboAccent;
+    } else if (state.template==="specs"){
+      fillBrandSelect(document.getElementById("specsBrand"), state.specsBrand);
+      document.getElementById("specsLogoScale").value = state.specsLogoScale || 1;
+      document.getElementById("specsLogoScaleVal").textContent = Math.round((state.specsLogoScale||1)*100)+"%";
+      document.getElementById("specsHeadline1").value = state.specsHeadline1;
+      document.getElementById("specsHighlight").value = state.specsHighlight;
+      document.getElementById("specsHeadline2").value = state.specsHeadline2;
+      document.getElementById("specsCurrency").value = state.specsCurrency;
+      renderSpecsRows();
+      document.getElementById("specsAccent").value = state.specsAccent;
+      document.getElementById("specsRowShade").value = state.specsRowShade;
+    } else {
+      fillBrandSelect(document.getElementById("compareBrand"), state.compareBrand);
+      document.getElementById("compareLogoScale").value = state.compareLogoScale || 1;
+      document.getElementById("compareLogoScaleVal").textContent = Math.round((state.compareLogoScale||1)*100)+"%";
+      document.getElementById("compareShowLogo").checked = !!state.compareShowLogo;
+      document.getElementById("compareLines").value = state.compareLines;
+      document.getElementById("compareModel").value = state.compareModel;
+      document.getElementById("compareOrigLabel").value = state.compareOrigLabel;
+      document.getElementById("compareOrigPrice").value = state.compareOrigPrice;
+      document.getElementById("compareOrigUnit").value = state.compareOrigUnit;
+      document.getElementById("compareSpecialLabel").value = state.compareSpecialLabel;
+      document.getElementById("compareSpecialPrice").value = state.compareSpecialPrice;
+      document.getElementById("compareSpecialUnit").value = state.compareSpecialUnit;
+      document.getElementById("compareAccent").value = state.compareAccent;
+    }
+  }
+
+  /* ---------- events ---------- */
+  function bindStatic(){
+    document.getElementById("templateTabs").addEventListener("click", function(e){
+      var btn = e.target.closest("button[data-tpl]");
+      if (!btn) return;
+      var tpl = btn.dataset.tpl;
+      if (tpl === state.template) return;
+      var fresh = clone(DEFAULTS[tpl]);
+      deck.cards[activeIndex] = fresh;
+      state = fresh;
+      populateForm();
+      renderCard();
+    });
+
+    document.getElementById("resetSampleBtn").addEventListener("click", function(){
+      var fresh = clone(DEFAULTS[state.template]);
+      deck.cards[activeIndex] = fresh;
+      state = fresh;
+      populateForm();
+      renderCard();
+    });
+
+    document.getElementById("addCardBtn").addEventListener("click", addCard);
+    document.getElementById("cardList").addEventListener("click", function(e){
+      var dup = e.target.closest(".card-item-dup");
+      var del = e.target.closest(".card-item-del");
+      var item = e.target.closest(".card-item");
+      if (dup){ duplicateCard(+dup.dataset.idx); return; }
+      if (del){ removeCard(+del.dataset.idx); return; }
+      if (item){ selectCard(+item.dataset.idx); }
+    });
+    document.getElementById("previewPages").addEventListener("click", function(e){
+      var el = e.target.closest(".card");
+      if (!el) return;
+      var idx = +el.dataset.cardIdx;
+      if (!isNaN(idx) && idx !== activeIndex) selectCard(idx);
+    });
+    document.getElementById("lineHeightScale").addEventListener("input", function(){
+      state.lineHeightScale = parseFloat(this.value) || 1;
+      document.getElementById("lineHeightScaleVal").textContent = state.lineHeightScale.toFixed(2)+"×";
+      renderCard();
+    });
+
+    document.getElementById("sizePreset").addEventListener("change", function(){
+      var v = this.value;
+      if (SIZE_PRESETS[v]){
+        state.size = {w:SIZE_PRESETS[v].w, h:SIZE_PRESETS[v].h};
+        document.getElementById("sizeW").value = state.size.w;
+        document.getElementById("sizeH").value = state.size.h;
+        renderCard();
+      }
+    });
+    document.getElementById("sizeW").addEventListener("input", function(){
+      var v = parseFloat(this.value); if (!v || v<=0) return;
+      state.size.w = v; document.getElementById("sizePreset").value = "custom"; renderCard();
+    });
+    document.getElementById("sizeH").addEventListener("input", function(){
+      var v = parseFloat(this.value); if (!v || v<=0) return;
+      state.size.h = v; document.getElementById("sizePreset").value = "custom"; renderCard();
+    });
+    document.getElementById("copies").addEventListener("input", function(){
+      state.copies = parseInt(this.value,10) || 1; renderCard();
+    });
+    document.getElementById("cutGuides").addEventListener("change", function(){
+      state.cutGuides = this.checked; renderCard();
+    });
+    document.getElementById("fitPageBtn").addEventListener("click", function(){
+      var gap = 0.4, margin = 1.0;
+      var usableW = 21 - margin*2, usableH = 29.7 - margin*2;
+      var cols = Math.max(1, Math.floor((usableW + gap) / (state.size.w + gap)));
+      var rows = Math.max(1, Math.floor((usableH + gap) / (state.size.h + gap)));
+      state.copies = cols*rows;
+      document.getElementById("copies").value = state.copies;
+      renderCard();
+    });
+    document.getElementById("zoom").addEventListener("input", applyZoom);
+    document.getElementById("printBtn").addEventListener("click", function(){ window.print(); });
+
+    /* ---- combo ---- */
+    document.getElementById("comboBrand1").addEventListener("change", function(){ state.comboBrand1=this.value; renderCard(); });
+    document.getElementById("comboBrand2").addEventListener("change", function(){ state.comboBrand2=this.value; renderCard(); });
+    document.getElementById("comboBrand1Upload").addEventListener("change", function(){
+      var f=this.files[0]; if(!f) return;
+      fileToDataUrl(f, function(url){ state.comboBrand1Upload=url; renderCard(); });
+    });
+    document.getElementById("comboBrand2Upload").addEventListener("change", function(){
+      var f=this.files[0]; if(!f) return;
+      fileToDataUrl(f, function(url){ state.comboBrand2Upload=url; renderCard(); });
+    });
+    document.getElementById("comboLogo1Scale").addEventListener("input", function(){
+      state.comboLogo1Scale = parseFloat(this.value) || 1;
+      document.getElementById("comboLogo1ScaleVal").textContent = Math.round(state.comboLogo1Scale*100)+"%";
+      renderCard();
+    });
+    document.getElementById("comboLogo2Scale").addEventListener("input", function(){
+      state.comboLogo2Scale = parseFloat(this.value) || 1;
+      document.getElementById("comboLogo2ScaleVal").textContent = Math.round(state.comboLogo2Scale*100)+"%";
+      renderCard();
+    });
+    document.getElementById("comboHeadline").addEventListener("input", function(){ state.comboHeadline=this.value; renderCard(); });
+    document.getElementById("comboAddItem").addEventListener("click", function(){
+      state.items.push(""); renderComboItems(); renderCard();
+      var inputs = document.querySelectorAll("#comboItemsList .combo-item-input");
+      if (inputs.length) inputs[inputs.length-1].focus();
+    });
+    document.getElementById("comboItemsList").addEventListener("input", function(e){
+      if (!e.target.classList.contains("combo-item-input")) return;
+      state.items[+e.target.dataset.idx] = e.target.value; renderCard();
+    });
+    document.getElementById("comboItemsList").addEventListener("click", function(e){
+      if (!e.target.classList.contains("btn-remove")) return;
+      state.items.splice(+e.target.dataset.idx,1); renderComboItems(); renderCard();
+    });
+    document.getElementById("comboOrigLabel").addEventListener("input", function(){ state.comboOrigLabel=this.value; renderCard(); });
+    document.getElementById("comboOrigPrice").addEventListener("input", function(){ state.comboOrigPrice=this.value; renderCard(); });
+    document.getElementById("comboSpecialLabel").addEventListener("input", function(){ state.comboSpecialLabel=this.value; renderCard(); });
+    document.getElementById("comboSpecialPrice").addEventListener("input", function(){ state.comboSpecialPrice=this.value; renderCard(); });
+    document.getElementById("comboAccent").addEventListener("input", function(){ state.comboAccent=this.value; renderCard(); });
+
+    /* ---- specs ---- */
+    document.getElementById("specsBrand").addEventListener("change", function(){ state.specsBrand=this.value; renderCard(); });
+    document.getElementById("specsBrandUpload").addEventListener("change", function(){
+      var f=this.files[0]; if(!f) return;
+      fileToDataUrl(f, function(url){ state.specsBrandUpload=url; renderCard(); });
+    });
+    document.getElementById("specsLogoScale").addEventListener("input", function(){
+      state.specsLogoScale = parseFloat(this.value) || 1;
+      document.getElementById("specsLogoScaleVal").textContent = Math.round(state.specsLogoScale*100)+"%";
+      renderCard();
+    });
+    document.getElementById("specsHeadline1").addEventListener("input", function(){ state.specsHeadline1=this.value; renderCard(); });
+    document.getElementById("specsHighlight").addEventListener("input", function(){ state.specsHighlight=this.value; renderCard(); });
+    document.getElementById("specsHeadline2").addEventListener("input", function(){ state.specsHeadline2=this.value; renderCard(); });
+    document.getElementById("specsCurrency").addEventListener("input", function(){ state.specsCurrency=this.value; renderCard(); });
+    document.getElementById("specsAddRow").addEventListener("click", function(){
+      state.rows.push({name:"", spec:"", price:""}); renderSpecsRows(); renderCard();
+    });
+    document.getElementById("specsRowsList").addEventListener("input", function(e){
+      var idx = e.target.dataset.idx; if (idx===undefined) return;
+      if (e.target.classList.contains("specs-row-name-input")) state.rows[+idx].name = e.target.value;
+      else if (e.target.classList.contains("specs-row-spec-input")) state.rows[+idx].spec = e.target.value;
+      else if (e.target.classList.contains("specs-row-price-input")) state.rows[+idx].price = e.target.value;
+      else return;
+      renderCard();
+    });
+    document.getElementById("specsRowsList").addEventListener("click", function(e){
+      if (!e.target.classList.contains("specs-row-remove")) return;
+      state.rows.splice(+e.target.dataset.idx,1); renderSpecsRows(); renderCard();
+    });
+    document.getElementById("specsAccent").addEventListener("input", function(){ state.specsAccent=this.value; renderCard(); });
+    document.getElementById("specsRowShade").addEventListener("input", function(){ state.specsRowShade=this.value; renderCard(); });
+
+    /* ---- compare ---- */
+    document.getElementById("compareShowLogo").addEventListener("change", function(){ state.compareShowLogo=this.checked; renderCard(); });
+    document.getElementById("compareBrand").addEventListener("change", function(){ state.compareBrand=this.value; renderCard(); });
+    document.getElementById("compareBrandUpload").addEventListener("change", function(){
+      var f=this.files[0]; if(!f) return;
+      fileToDataUrl(f, function(url){ state.compareBrandUpload=url; renderCard(); });
+    });
+    document.getElementById("compareLogoScale").addEventListener("input", function(){
+      state.compareLogoScale = parseFloat(this.value) || 1;
+      document.getElementById("compareLogoScaleVal").textContent = Math.round(state.compareLogoScale*100)+"%";
+      renderCard();
+    });
+    document.getElementById("compareLines").addEventListener("input", function(){ state.compareLines=this.value; renderCard(); });
+    document.getElementById("compareModel").addEventListener("input", function(){ state.compareModel=this.value; renderCard(); });
+    document.getElementById("compareOrigLabel").addEventListener("input", function(){ state.compareOrigLabel=this.value; renderCard(); });
+    document.getElementById("compareOrigPrice").addEventListener("input", function(){ state.compareOrigPrice=this.value; renderCard(); });
+    document.getElementById("compareOrigUnit").addEventListener("input", function(){ state.compareOrigUnit=this.value; renderCard(); });
+    document.getElementById("compareSpecialLabel").addEventListener("input", function(){ state.compareSpecialLabel=this.value; renderCard(); });
+    document.getElementById("compareSpecialPrice").addEventListener("input", function(){ state.compareSpecialPrice=this.value; renderCard(); });
+    document.getElementById("compareSpecialUnit").addEventListener("input", function(){ state.compareSpecialUnit=this.value; renderCard(); });
+    document.getElementById("compareAccent").addEventListener("input", function(){ state.compareAccent=this.value; renderCard(); });
+  }
+
+  function init(){
+    var loaded = loadDeck();
+    deck = {cards: loaded.cards};
+    activeIndex = loaded.activeIndex;
+    var hashTpl = (location.hash||"").replace("#","");
+    if (DEFAULTS[hashTpl]){ deck = {cards:[clone(DEFAULTS[hashTpl])]}; activeIndex = 0; }
+    state = deck.cards[activeIndex];
+    bindStatic();
+    populateForm();
+    renderCard();
+  }
+
+  document.addEventListener("DOMContentLoaded", init);
+})();
+</script>
+</body>
+</html>
