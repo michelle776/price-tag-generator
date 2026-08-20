@@ -70,6 +70,20 @@
   .row-group + .row-group{ margin-top:6px; }
   .row-group .lbl{ font-size:10.5px; }
 
+  /* per-line fine-tune tools (font size + up/down/left/right nudge) */
+  .linetools{ display:flex; align-items:center; gap:3px; margin:4px 0 10px; flex-wrap:wrap; }
+  .linetools .lt-size{ width:56px; height:auto; }
+  .lt-sizeval{ width:32px; font-size:10.5px; color:var(--ui-sub); }
+  .lt-btn{ flex:0 0 auto; width:21px; height:21px; border-radius:5px; border:1px solid #d8d2c8;
+    background:#fff; font-size:11px; line-height:1; cursor:pointer; padding:0; color:var(--ui-sub); }
+  .lt-btn:hover{ border-color:var(--ui-accent); color:var(--ui-accent); }
+  .lt-btn.lt-reset{ width:auto; padding:0 6px; font-size:12px; }
+  .row-item-group{ margin-bottom:2px; }
+  .linetool-row{ display:flex; flex-direction:column; gap:2px; margin-bottom:4px; padding:5px 6px;
+    background:#fbfaf8; border:1px solid #e6e1d8; border-radius:6px; }
+  .linetool-row .linetools{ margin:0; }
+  .linetool-label{ font-size:10.5px; color:var(--ui-sub); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
   .card-item{ display:grid; grid-template-columns:18px 1fr auto 22px 22px; align-items:center; gap:6px; padding:7px 8px;
     border:1px solid #e2ddd4; border-radius:6px; cursor:pointer; font-size:12px; background:#fff; }
   .card-item:hover{ border-color:var(--ui-accent); }
@@ -117,6 +131,7 @@
     color:#161311; cursor:pointer;
   }
   .card.cut-guide{ outline:1px dashed #9b9b9b; outline-offset:4px; }
+  .card.card-dome{ border:none; } /* border is baked into the dome background artwork */
   .card.card-active{ box-shadow:0 0 0 2px var(--ui-accent), 0 8px 24px rgba(0,0,0,.12); }
   .cardface{ width:100%; height:100%; box-sizing:border-box; padding:6.2cqw; display:flex; flex-direction:column; }
 
@@ -125,41 +140,66 @@
   .combo-logos{ display:flex; align-items:center; gap:3cqw; margin-bottom:3cqw; min-height:8cqw; }
   .combo-logo{ height:calc(8cqw * var(--logoscale,1)); max-width:calc(34cqw * var(--logoscale,1)); width:auto; object-fit:contain; }
   .logo-divider{ width:1px; align-self:stretch; background:#9b9b9b; }
-  .combo-headline{ font-size:calc(4.5cqw * var(--fontscale,1)); font-weight:800; line-height:calc(1.18 * var(--lhmul,1)); margin:0 0 2.6cqw; text-wrap:balance; }
+  .combo-headline{ font-size:calc(4.5cqw * var(--fontscale,1) * var(--ls,1)); font-weight:800; line-height:calc(1.18 * var(--lhmul,1)); margin:0 0 2.6cqw; text-wrap:balance; }
   .combo-items{ list-style:none; margin:0; padding:0; flex:1; min-height:0; overflow:hidden; }
-  .combo-items li{ font-size:calc(2.55cqw * var(--fontscale,1)); line-height:calc(1.55 * var(--lhmul,1)); }
+  .combo-items li{ font-size:calc(2.55cqw * var(--fontscale,1) * var(--ls,1)); line-height:calc(1.55 * var(--lhmul,1)); }
   .combo-items li::before{ content:"- "; }
   .combo-price{ align-self:flex-end; text-align:right; margin-top:1.4cqw; flex:none; }
   .combo-price .price-line{ display:flex; gap:1.2cqw; justify-content:flex-end; align-items:baseline; white-space:nowrap; }
   .combo-price .lbl{ font-weight:700; }
-  .combo-price .orig{ font-size:calc(2.7cqw * var(--fontscale,1)); }
-  .combo-price .special{ font-size:calc(3.9cqw * var(--fontscale,1)); font-weight:800; color:var(--accent,#a8542f); margin-top:0.5cqw; }
+  .combo-price .orig{ font-size:calc(2.7cqw * var(--fontscale,1) * var(--ls,1)); }
+  .combo-price .special{ font-size:calc(3.9cqw * var(--fontscale,1) * var(--ls,1)); font-weight:800; color:var(--accent,#a8542f); margin-top:0.5cqw; }
   .combo-price .val{ font-variant-numeric:tabular-nums; }
 
   /* specs template */
   .cardface.specs{ justify-content:flex-start; padding:4.6cqw; }
   .specs-logo{ height:calc(6cqw * var(--logoscale,1)); max-width:calc(44cqw * var(--logoscale,1)); width:auto; object-fit:contain; margin-bottom:2.6cqw; align-self:flex-start; }
-  .specs-headline p{ margin:0 0 0.8cqw; font-size:calc(3.7cqw * var(--fontscale,1)); font-weight:700; line-height:calc(1.25 * var(--lhmul,1)); text-wrap:balance; }
-  .specs-headline p.sub{ font-weight:500; font-size:calc(2.7cqw * var(--fontscale,1)); }
+  .specs-headline p{ margin:0 0 0.8cqw; font-size:calc(3.7cqw * var(--fontscale,1) * var(--ls,1)); font-weight:700; line-height:calc(1.25 * var(--lhmul,1)); text-wrap:balance; }
+  .specs-headline p.sub{ font-weight:500; font-size:calc(2.7cqw * var(--fontscale,1) * var(--ls,1)); }
   .specs-headline .hl{ color:var(--accent,#c0392b); }
   .specs-rule{ border:none; border-top:1px solid #333; margin:2.2cqw 0; }
   .specs-rows{ flex:1; display:flex; flex-direction:column; overflow:hidden; min-height:0; }
   .specs-row{ display:flex; justify-content:space-between; align-items:center; gap:2.4cqw; padding:1.5cqw 1.8cqw; flex:1; min-height:0; }
   .specs-row.alt{ background:var(--rowshade,#ece5da); }
-  .specs-row-name{ font-size:calc(3.4cqw * var(--fontscale,1)); font-weight:700; line-height:calc(1.2 * var(--lhmul,1)); margin-bottom:0.4cqw; }
-  .specs-row-spec{ font-size:calc(2cqw * var(--fontscale,1)); color:#4a4642; line-height:calc(1.35 * var(--lhmul,1)); }
-  .specs-row-price{ font-size:calc(4.4cqw * var(--fontscale,1)); font-weight:800; font-variant-numeric:tabular-nums; white-space:nowrap; line-height:1; }
+  .specs-row-name{ font-size:calc(3.4cqw * var(--fontscale,1) * var(--ls,1)); font-weight:700; line-height:calc(1.2 * var(--lhmul,1)); margin-bottom:0.4cqw; }
+  .specs-row-spec{ font-size:calc(2cqw * var(--fontscale,1) * var(--ls,1)); color:#4a4642; line-height:calc(1.35 * var(--lhmul,1)); }
+  .specs-row-price{ font-size:calc(4.4cqw * var(--fontscale,1) * var(--ls,1)); font-weight:800; font-variant-numeric:tabular-nums; white-space:nowrap; line-height:1; }
 
   /* compare template */
   .cardface.compare{ align-items:center; justify-content:center; text-align:center; gap:0.9cqw; padding:4.6cqw; }
   .compare-logo{ height:calc(9cqw * var(--logoscale,1)); max-width:calc(55cqw * var(--logoscale,1)); width:auto; object-fit:contain; margin-bottom:0.8cqw; }
-  .compare-lines p{ margin:0.35cqw 0; font-size:calc(5.3cqw * var(--fontscale,1)); font-weight:500; line-height:calc(1.22 * var(--lhmul,1)); text-wrap:balance; }
+  .compare-lines p{ margin:0.35cqw 0; font-size:calc(5.3cqw * var(--fontscale,1) * var(--ls,1)); font-weight:500; line-height:calc(1.22 * var(--lhmul,1)); text-wrap:balance; }
   .compare-lines strong{ font-weight:800; font-size:1.08em; }
-  .compare-model{ font-size:calc(2.9cqw * var(--fontscale,1)); color:#57524c; margin:0.9cqw 0 0; }
+  .compare-model{ font-size:calc(2.9cqw * var(--fontscale,1) * var(--ls,1)); color:#57524c; margin:0.9cqw 0 0; }
   .compare-price{ margin-top:1.6cqw; }
-  .compare-price .orig{ font-size:calc(3.3cqw * var(--fontscale,1)); margin:0 0 0.7cqw; font-variant-numeric:tabular-nums; }
-  .compare-price .special{ font-size:calc(3.9cqw * var(--fontscale,1)); font-weight:700; color:var(--accent,#d3311f); margin:0; font-variant-numeric:tabular-nums; }
+  .compare-price .orig{ font-size:calc(3.3cqw * var(--fontscale,1) * var(--ls,1)); margin:0 0 0.7cqw; font-variant-numeric:tabular-nums; }
+  .compare-price .special{ font-size:calc(3.9cqw * var(--fontscale,1) * var(--ls,1)); font-weight:700; color:var(--accent,#d3311f); margin:0; font-variant-numeric:tabular-nums; }
   .compare-price .special .big{ font-size:1.5em; font-weight:800; }
+
+  /* dome template (遠東 Garden City 大巨蛋門市) */
+  .cardface.dome{
+    justify-content:flex-start; padding:7cqw 0 var(--dome-bottompad,11cqw) 0;
+    background-size:cover; background-position:center; background-repeat:no-repeat;
+  }
+  .dome-logo-wrap{ display:flex; padding:0 9cqw; margin-bottom:4cqw; }
+  .dome-logo-wrap.align-center{ justify-content:center; }
+  .dome-logo-wrap.align-left{ justify-content:flex-start; }
+  .dome-logo{ height:calc(9cqw * var(--logoscale,1)); max-width:calc(50cqw * var(--logoscale,1)); width:auto; object-fit:contain; }
+  .dome-content{ padding:0 7cqw; display:flex; flex-direction:column; flex:1; min-height:0; }
+  .dome-content.align-center{ align-items:center; text-align:center; }
+  .dome-content.align-left{ align-items:flex-start; text-align:left; }
+  .dome-headline{ font-size:calc(3.6cqw * var(--fontscale,1) * var(--ls,1)); font-weight:800; line-height:calc(1.28 * var(--lhmul,1)); margin:0; text-wrap:balance; }
+  .dome-sub{ font-size:calc(2.3cqw * var(--fontscale,1) * var(--ls,1)); color:#6b6660; font-weight:500; margin:1cqw 0 0; }
+  .dome-rows{ display:flex; flex-wrap:wrap; align-items:baseline; column-gap:2.6cqw; row-gap:0.9cqw; margin-top:auto; }
+  .dome-rows.stacked{ flex-direction:column; }
+  .dome-rows.stacked.align-center{ align-items:center; }
+  .dome-rows.stacked.align-left{ align-items:flex-start; }
+  .dome-row{ display:flex; align-items:baseline; gap:1cqw; white-space:nowrap; }
+  .dome-row-label{ font-size:calc(3cqw * var(--fontscale,1) * var(--ls,1)); font-weight:700; }
+  .dome-row-value{ font-size:calc(4.2cqw * var(--fontscale,1) * var(--ls,1)); font-weight:800; font-variant-numeric:tabular-nums; }
+  .dome-row-unit{ font-size:calc(3cqw * var(--fontscale,1) * var(--ls,1)); font-weight:500; }
+  .dome-row-value.hl{ font-size:calc(5.4cqw * var(--fontscale,1) * var(--ls,1)); color:var(--accent,#d3311f); }
+  .dome-row-unit.hl{ color:var(--accent,#d3311f); }
 
   /* ---------- print (prints exactly what the A4 preview shows) ---------- */
   @media print{
@@ -198,6 +238,7 @@
         <button type="button" data-tpl="combo">商品組合卡</button>
         <button type="button" data-tpl="specs">規格價目表</button>
         <button type="button" data-tpl="compare">單品比價卡</button>
+        <button type="button" data-tpl="dome">大巨蛋門市卡</button>
       </div>
       <button type="button" class="btn ghost" id="resetSampleBtn" style="width:100%;">重設為此版型範例內容</button>
     </fieldset>
@@ -211,6 +252,7 @@
           <option value="11x15">11 × 15 cm（直式・規格表常用）</option>
           <option value="7x4">7 × 4 cm（橫式・小卡常用）</option>
           <option value="7.5x4">7.5 × 4 cm（橫式・小卡常用）</option>
+          <option value="12x8">12 × 8 cm（橫式・大巨蛋門市卡常用）</option>
           <option value="custom">自訂尺寸</option>
         </select>
       </label>
@@ -261,11 +303,11 @@
       </fieldset>
       <fieldset>
         <legend>價格</legend>
-        <div class="row2">
+        <div class="row2" id="comboOrigRow">
           <label class="field"><span class="lbl">原價標籤</span><input type="text" id="comboOrigLabel"></label>
           <label class="field"><span class="lbl">原價金額</span><input type="text" id="comboOrigPrice"></label>
         </div>
-        <div class="row2">
+        <div class="row2" id="comboSpecialRow">
           <label class="field"><span class="lbl">特價標籤</span><input type="text" id="comboSpecialLabel"></label>
           <label class="field"><span class="lbl">特價金額</span><input type="text" id="comboSpecialPrice"></label>
         </div>
@@ -320,21 +362,63 @@
         <label class="field"><span class="lbl">置中文字（每行一句，可用 **文字** 加粗放大）</span>
           <textarea id="compareLines" rows="4"></textarea>
         </label>
+        <div class="lbl" style="margin-bottom:6px;">各行文字位置微調</div>
+        <div id="compareLineTools"></div>
         <label class="field"><span class="lbl">型號（選用，較小字）</span><input type="text" id="compareModel"></label>
       </fieldset>
       <fieldset>
         <legend>價格</legend>
-        <div class="row3">
+        <div class="row3" id="compareOrigRow">
           <label class="field"><span class="lbl">原價標籤</span><input type="text" id="compareOrigLabel"></label>
           <label class="field"><span class="lbl">原價金額</span><input type="text" id="compareOrigPrice"></label>
           <label class="field"><span class="lbl">單位</span><input type="text" id="compareOrigUnit"></label>
         </div>
-        <div class="row3">
+        <div class="row3" id="compareSpecialRow">
           <label class="field"><span class="lbl">特價標籤</span><input type="text" id="compareSpecialLabel"></label>
           <label class="field"><span class="lbl">特價金額</span><input type="text" id="compareSpecialPrice"></label>
           <label class="field"><span class="lbl">單位</span><input type="text" id="compareSpecialUnit"></label>
         </div>
         <label class="field"><span class="lbl">強調色</span><input type="color" id="compareAccent"></label>
+      </fieldset>
+    </div>
+
+    <!-- ===== DOME (大巨蛋門市) FORM ===== -->
+    <div id="formDome">
+      <fieldset>
+        <legend>底圖版型</legend>
+        <label class="field"><span class="lbl">背景底圖</span>
+          <select id="domeBg">
+            <option value="12x8">12 × 8 cm 版面</option>
+            <option value="7x4">7 × 4 cm 版面</option>
+          </select>
+        </label>
+      </fieldset>
+      <fieldset>
+        <legend>品牌 Logo</legend>
+        <label class="field"><span class="lbl">品牌</span><select id="domeBrand"></select></label>
+        <label class="field"><span class="lbl">或上傳圖片（取代上方選擇）</span><input type="file" id="domeBrandUpload" accept="image/*"></label>
+        <label class="field"><span class="lbl">Logo 大小 <span id="domeLogoScaleVal" class="tiny"></span></span>
+          <input type="range" id="domeLogoScale" min="0.5" max="2" step="0.05" value="1" style="width:100%;"></label>
+        <label class="field"><span class="lbl">Logo 對齊</span>
+          <select id="domeLogoAlign">
+            <option value="center">置中</option>
+            <option value="left">靠左</option>
+          </select>
+        </label>
+      </fieldset>
+      <fieldset>
+        <legend>商品內容</legend>
+        <label class="field"><span class="lbl">標題（商品名稱，可用 **文字** 加粗）</span><textarea id="domeHeadline" rows="2"></textarea></label>
+        <label class="field"><span class="lbl">副標（型號 / 顏色，選用，較小灰字）</span><input type="text" id="domeSub"></label>
+      </fieldset>
+      <fieldset>
+        <legend>價格列</legend>
+        <div class="listbox" id="domeRowsList"></div>
+        <button type="button" class="btn-add" id="domeAddRow">+ 新增一列價格</button>
+      </fieldset>
+      <fieldset>
+        <legend>顏色</legend>
+        <label class="field"><span class="lbl">強調色（勾選「特價／強調」的列會套用此色）</span><input type="color" id="domeAccent"></label>
       </fieldset>
     </div>
   </aside>
@@ -376,6 +460,7 @@
     {id:"dynaudio", name:"Dynaudio", file:"logos/dynaudio.png"},
     {id:"hitachi", name:"Hitachi", file:"logos/hitachi.png"},
     {id:"lg", name:"LG", file:"logos/lg.png"},
+    {id:"lg-color", name:"LG（彩色）", file:"logos/lg-color.png"},
     {id:"linn", name:"Linn", file:"logos/linn.png"},
     {id:"marantz", name:"Marantz", file:"logos/marantz.png"},
     {id:"mcintosh", name:"McIntosh", file:"logos/mcintosh.png"},
@@ -391,7 +476,34 @@
     "15x10": {w:15, h:10},
     "11x15": {w:11, h:15},
     "7x4":   {w:7,  h:4},
-    "7.5x4": {w:7.5,h:4}
+    "7.5x4": {w:7.5,h:4},
+    "12x8":  {w:12, h:8}
+  };
+
+  var DOME_BG = {
+    "12x8": "templates/dome-bg-12x8.jpg",
+    "7x4":  "templates/dome-bg-7x4.jpg"
+  };
+
+  // sample content applied when the matching background variant is picked
+  var DOME_SAMPLES = {
+    "12x8": {
+      domeBrand:"lg-color", domeBrandUpload:"",
+      domeHeadline:"PuriCare™ 360°空氣清淨機\n寵物功能增加版二代-旗艦款/建議32坪 (雙層)",
+      domeSub:"AS111NGY1",
+      domeRows:[
+        {label:"售價", value:"40,800", unit:"元", highlight:false},
+        {label:"特價", value:"39,800", unit:"元", highlight:true}
+      ]
+    },
+    "7x4": {
+      domeBrand:"audiotechnica", domeBrandUpload:"",
+      domeHeadline:"ATH-SQ1TW2NC/GR 真無線降噪耳機",
+      domeSub:"綠色",
+      domeRows:[
+        {label:"建議售價", value:"2,800", unit:"元", highlight:false}
+      ]
+    }
   };
 
   var DEFAULTS = {
@@ -411,7 +523,8 @@
       comboOrigLabel:"原價", comboOrigPrice:"371,000",
       comboSpecialLabel:"專案價", comboSpecialPrice:"258,000",
       comboAccent:"#a8542f",
-      comboLogo1Scale:1, comboLogo2Scale:1, lineHeightScale:1, fontScale:1
+      comboLogo1Scale:1, comboLogo2Scale:1, lineHeightScale:1, fontScale:1,
+      lineStyles:{}
     },
     specs: {
       template:"specs",
@@ -427,7 +540,8 @@
         {name:"75吋 QA75QN87DAXXZW", spec:"含底座 W 167 H 101.6 D 27.5(CM)\n不含底座 W 167 H 95.8 D2.77(CM)", price:"94,900"},
         {name:"85吋 QA85QN87DAXXZW", spec:"含底座 W 189.3 H 114 D 31.1(CM)\n不含底座 W 189.3 H 108.2 D2.79(CM)", price:"209,900"}
       ],
-      specsAccent:"#b5502f", specsRowShade:"#ece5da"
+      specsAccent:"#b5502f", specsRowShade:"#ece5da",
+      lineStyles:{}
     },
     compare: {
       template:"compare",
@@ -437,7 +551,22 @@
       compareModel:"",
       compareOrigLabel:"原價", compareOrigPrice:"82,990", compareOrigUnit:"元",
       compareSpecialLabel:"陳列出清價", compareSpecialPrice:"70,542", compareSpecialUnit:"元",
-      compareAccent:"#d3311f"
+      compareAccent:"#d3311f",
+      lineStyles:{}
+    },
+    dome: {
+      template:"dome",
+      size:{w:12,h:8}, copies:1, cutGuides:false,
+      domeBg:"12x8",
+      domeBrand:"lg-color", domeBrandUpload:"", domeLogoScale:1, domeLogoAlign:"center", lineHeightScale:1, fontScale:1,
+      domeHeadline:"PuriCare™ 360°空氣清淨機\n寵物功能增加版二代-旗艦款/建議32坪 (雙層)",
+      domeSub:"AS111NGY1",
+      domeRows:[
+        {label:"售價", value:"40,800", unit:"元", highlight:false},
+        {label:"特價", value:"39,800", unit:"元", highlight:true}
+      ],
+      domeAccent:"#d3311f",
+      lineStyles:{}
     }
   };
 
@@ -500,6 +629,82 @@
     return '<img src="'+src+'" class="'+cls+'" style="--logoscale:'+s+'" alt="logo">';
   }
 
+  /* ---------- per-line fine-tune (font size + up/down/left/right nudge) ---------- */
+  var LINE_NUDGE_STEP = 0.5; // cqw per click
+
+  function getLineStyle(s, key){
+    var ls = s.lineStyles && s.lineStyles[key];
+    return {fontScale:(ls && ls.fontScale) || 1, dx:(ls && ls.dx) || 0, dy:(ls && ls.dy) || 0};
+  }
+  function lineStyleAttr(s, key){
+    var ls = getLineStyle(s, key);
+    return '--ls:'+ls.fontScale+';transform:translate('+ls.dx+'cqw,'+ls.dy+'cqw)';
+  }
+  function lineToolsHTML(key){
+    var k = esc(key);
+    return '<div class="linetools" data-key="'+k+'">'
+      + '<input type="range" class="lt-size" min="0.5" max="2" step="0.05" value="1" data-key="'+k+'" title="字體大小">'
+      + '<span class="lt-sizeval tiny">100%</span>'
+      + '<button type="button" class="lt-btn" data-key="'+k+'" data-dir="up" title="上移">↑</button>'
+      + '<button type="button" class="lt-btn" data-key="'+k+'" data-dir="down" title="下移">↓</button>'
+      + '<button type="button" class="lt-btn" data-key="'+k+'" data-dir="left" title="左移">←</button>'
+      + '<button type="button" class="lt-btn" data-key="'+k+'" data-dir="right" title="右移">→</button>'
+      + '<button type="button" class="lt-btn lt-reset" data-key="'+k+'" title="重設">↺</button>'
+    + '</div>';
+  }
+  function ensureLineStyle(key){
+    if (!state.lineStyles) state.lineStyles = {};
+    if (!state.lineStyles[key]) state.lineStyles[key] = {fontScale:1, dx:0, dy:0};
+    return state.lineStyles[key];
+  }
+  function setLineFontScale(key, val){
+    ensureLineStyle(key).fontScale = val;
+    renderCard();
+  }
+  function nudgeLine(key, dir){
+    var ls = ensureLineStyle(key);
+    if (dir==="up") ls.dy -= LINE_NUDGE_STEP;
+    else if (dir==="down") ls.dy += LINE_NUDGE_STEP;
+    else if (dir==="left") ls.dx -= LINE_NUDGE_STEP;
+    else if (dir==="right") ls.dx += LINE_NUDGE_STEP;
+    renderCard();
+  }
+  function resetLineStyle(key){
+    if (state.lineStyles) delete state.lineStyles[key];
+    renderCard();
+    syncLineTools();
+  }
+  function syncLineTools(){
+    document.querySelectorAll(".linetools").forEach(function(el){
+      var key = el.dataset.key;
+      var ls = getLineStyle(state, key);
+      var slider = el.querySelector(".lt-size");
+      var val = el.querySelector(".lt-sizeval");
+      if (slider) slider.value = ls.fontScale;
+      if (val) val.textContent = Math.round(ls.fontScale*100)+"%";
+    });
+  }
+  function injectLineTools(afterId, key){
+    var el = document.getElementById(afterId);
+    if (!el) return;
+    var anchor = el.closest("label.field") || el;
+    var wrap = document.createElement("div");
+    wrap.innerHTML = lineToolsHTML(key);
+    anchor.parentNode.insertBefore(wrap.firstChild, anchor.nextSibling);
+  }
+  function initStaticLineTools(){
+    injectLineTools("comboHeadline", "combo.headline");
+    injectLineTools("comboOrigRow", "combo.origLine");
+    injectLineTools("comboSpecialRow", "combo.specialLine");
+    injectLineTools("specsHeadline1", "specs.headline1");
+    injectLineTools("specsHeadline2", "specs.headline2");
+    injectLineTools("compareModel", "compare.model");
+    injectLineTools("compareOrigRow", "compare.origLine");
+    injectLineTools("compareSpecialRow", "compare.specialLine");
+    injectLineTools("domeHeadline", "dome.headline");
+    injectLineTools("domeSub", "dome.sub");
+  }
+
   /* ---------- card builders ---------- */
   function buildCombo(s){
     var logo1 = brandImgTag(s.comboBrand1, s.comboBrand1Upload, "combo-logo", s.comboLogo1Scale);
@@ -508,15 +713,17 @@
     if (logo1 || logo2){
       logosHTML = '<div class="combo-logos">'+logo1+(logo1&&logo2?'<span class="logo-divider"></span>':'')+logo2+'</div>';
     }
-    var itemsHTML = (s.items||[]).filter(function(i){return i && i.trim()!=="";})
-      .map(function(i){ return "<li>"+fmt(i)+"</li>"; }).join("");
+    var itemsHTML = (s.items||[]).map(function(item, idx){
+      if (!item || item.trim()==="") return "";
+      return '<li style="'+lineStyleAttr(s,"combo.item."+idx)+'">'+fmt(item)+'</li>';
+    }).join("");
     return '<div class="cardface combo" style="--accent:'+esc(s.comboAccent)+';--lhmul:'+(s.lineHeightScale||1)+';--fontscale:'+(s.fontScale||1)+'">'
       + logosHTML
-      + '<h1 class="combo-headline">'+fmt(s.comboHeadline)+'</h1>'
+      + '<h1 class="combo-headline" style="'+lineStyleAttr(s,"combo.headline")+'">'+fmt(s.comboHeadline)+'</h1>'
       + '<ul class="combo-items">'+itemsHTML+'</ul>'
       + '<div class="combo-price">'
-        + '<div class="price-line orig"><span class="lbl">'+fmt(s.comboOrigLabel)+'</span><span class="val">$'+money(s.comboOrigPrice)+'</span></div>'
-        + '<div class="price-line special"><span class="lbl">'+fmt(s.comboSpecialLabel)+'</span><span class="val">$'+money(s.comboSpecialPrice)+'</span></div>'
+        + '<div class="price-line orig" style="'+lineStyleAttr(s,"combo.origLine")+'"><span class="lbl">'+fmt(s.comboOrigLabel)+'</span><span class="val">$'+money(s.comboOrigPrice)+'</span></div>'
+        + '<div class="price-line special" style="'+lineStyleAttr(s,"combo.specialLine")+'"><span class="lbl">'+fmt(s.comboSpecialLabel)+'</span><span class="val">$'+money(s.comboSpecialPrice)+'</span></div>'
       + '</div>'
     + '</div>';
   }
@@ -534,15 +741,15 @@
       var specHtml = fmt(r.spec||"").replace(/\n/g,"<br>");
       return '<div class="specs-row '+(i%2===1?'alt':'')+'">'
         + '<div class="specs-row-text">'
-          + '<div class="specs-row-name">'+fmt(r.name)+'</div>'
-          + '<div class="specs-row-spec">'+specHtml+'</div>'
+          + '<div class="specs-row-name" style="'+lineStyleAttr(s,"specs.row."+i+".name")+'">'+fmt(r.name)+'</div>'
+          + '<div class="specs-row-spec" style="'+lineStyleAttr(s,"specs.row."+i+".spec")+'">'+specHtml+'</div>'
         + '</div>'
-        + '<div class="specs-row-price">'+esc(s.specsCurrency)+money(r.price)+'</div>'
+        + '<div class="specs-row-price" style="'+lineStyleAttr(s,"specs.row."+i+".price")+'">'+esc(s.specsCurrency)+money(r.price)+'</div>'
       + '</div>';
     }).join("");
     return '<div class="cardface specs" style="--accent:'+esc(s.specsAccent)+';--rowshade:'+esc(s.specsRowShade)+';--lhmul:'+(s.lineHeightScale||1)+';--fontscale:'+(s.fontScale||1)+'">'
       + logo
-      + '<div class="specs-headline"><p>'+hl1+'</p><p class="sub">'+fmt(s.specsHeadline2)+'</p></div>'
+      + '<div class="specs-headline"><p style="'+lineStyleAttr(s,"specs.headline1")+'">'+hl1+'</p><p class="sub" style="'+lineStyleAttr(s,"specs.headline2")+'">'+fmt(s.specsHeadline2)+'</p></div>'
       + '<hr class="specs-rule">'
       + '<div class="specs-rows">'+rowsHTML+'</div>'
     + '</div>';
@@ -550,16 +757,45 @@
 
   function buildCompare(s){
     var logo = s.compareShowLogo ? brandImgTag(s.compareBrand, s.compareBrandUpload, "compare-logo", s.compareLogoScale) : "";
-    var lines = (s.compareLines||"").split("\n").filter(function(l){return l.trim()!=="";})
-      .map(function(l){ return "<p>"+fmt(l)+"</p>"; }).join("");
-    var modelHTML = (s.compareModel||"").trim() ? '<p class="compare-model">'+fmt(s.compareModel)+'</p>' : "";
+    var lines = (s.compareLines||"").split("\n").map(function(l, idx){
+      if (!l || l.trim()==="") return "";
+      return '<p style="'+lineStyleAttr(s,"compare.line."+idx)+'">'+fmt(l)+'</p>';
+    }).join("");
+    var modelHTML = (s.compareModel||"").trim() ? '<p class="compare-model" style="'+lineStyleAttr(s,"compare.model")+'">'+fmt(s.compareModel)+'</p>' : "";
     return '<div class="cardface compare" style="--accent:'+esc(s.compareAccent)+';--lhmul:'+(s.lineHeightScale||1)+';--fontscale:'+(s.fontScale||1)+'">'
       + logo
       + '<div class="compare-lines">'+lines+'</div>'
       + modelHTML
       + '<div class="compare-price">'
-        + '<p class="orig">'+fmt(s.compareOrigLabel)+' '+money(s.compareOrigPrice)+' '+fmt(s.compareOrigUnit)+'</p>'
-        + '<p class="special">'+fmt(s.compareSpecialLabel)+' <span class="big">'+money(s.compareSpecialPrice)+'</span> '+fmt(s.compareSpecialUnit)+'</p>'
+        + '<p class="orig" style="'+lineStyleAttr(s,"compare.origLine")+'">'+fmt(s.compareOrigLabel)+' '+money(s.compareOrigPrice)+' '+fmt(s.compareOrigUnit)+'</p>'
+        + '<p class="special" style="'+lineStyleAttr(s,"compare.specialLine")+'">'+fmt(s.compareSpecialLabel)+' <span class="big">'+money(s.compareSpecialPrice)+'</span> '+fmt(s.compareSpecialUnit)+'</p>'
+      + '</div>'
+    + '</div>';
+  }
+
+  function buildDome(s){
+    var logo = brandImgTag(s.domeBrand, s.domeBrandUpload, "dome-logo", s.domeLogoScale);
+    var logoAlign = s.domeLogoAlign === "left" ? "align-left" : "align-center";
+    var logoHTML = logo ? '<div class="dome-logo-wrap '+logoAlign+'">'+logo+'</div>' : "";
+    var headlineHTML = fmt(s.domeHeadline||"").replace(/\n/g,"<br>");
+    var subHTML = (s.domeSub||"").trim() ? '<p class="dome-sub" style="'+lineStyleAttr(s,"dome.sub")+'">'+fmt(s.domeSub)+'</p>' : "";
+    var rowsHTML = (s.domeRows||[]).map(function(r, i){
+      var hl = r.highlight ? " hl" : "";
+      return '<span class="dome-row" style="'+lineStyleAttr(s,"dome.row."+i)+'">'
+        + '<span class="dome-row-label'+hl+'">'+fmt(r.label)+'</span>'
+        + '<span class="dome-row-value'+hl+'">'+money(r.value)+'</span>'
+        + '<span class="dome-row-unit'+hl+'">'+fmt(r.unit)+'</span>'
+      + '</span>';
+    }).join("");
+    var bgFile = DOME_BG[s.domeBg] || DOME_BG["12x8"];
+    var stacked = s.domeBg !== "7x4";
+    var bottomPad = s.domeBg === "7x4" ? "15cqw" : "14cqw";
+    return '<div class="cardface dome" style="background-image:url(\''+bgFile+'\');--accent:'+esc(s.domeAccent)+';--lhmul:'+(s.lineHeightScale||1)+';--fontscale:'+(s.fontScale||1)+';--dome-bottompad:'+bottomPad+'">'
+      + logoHTML
+      + '<div class="dome-content '+logoAlign+'">'
+        + '<h1 class="dome-headline" style="'+lineStyleAttr(s,"dome.headline")+'">'+headlineHTML+'</h1>'
+        + subHTML
+        + '<div class="dome-rows '+(stacked?'stacked ':'')+logoAlign+'">'+rowsHTML+'</div>'
       + '</div>'
     + '</div>';
   }
@@ -567,6 +803,7 @@
   function buildCardInner(s){
     if (s.template==="combo") return buildCombo(s);
     if (s.template==="specs") return buildSpecs(s);
+    if (s.template==="dome") return buildDome(s);
     return buildCompare(s);
   }
 
@@ -607,7 +844,7 @@
     var html = pages.map(function(pageItems){
       var inner = pageItems.map(function(it){
         var c = it.card;
-        var cls = "card" + (c.cutGuides ? " cut-guide" : "") + (it.cardIndex===activeIndex ? " card-active" : "");
+        var cls = "card" + (c.template==="dome" ? " card-dome" : "") + (c.cutGuides ? " cut-guide" : "") + (it.cardIndex===activeIndex ? " card-active" : "");
         return '<div class="'+cls+'" data-card-idx="'+it.cardIndex+'" style="width:'+c.size.w+'cm;height:'+c.size.h+'cm;">'+buildCardInner(c)+'</div>';
       }).join("");
       return '<div class="a4-sheet"><div class="a4-inner" style="gap:'+pageGap+'cm">'+inner+'</div></div>';
@@ -631,10 +868,12 @@
 
   /* ---------- card deck management ---------- */
   function cardLabel(c){
-    var tplName = c.template==="combo" ? "組合卡" : c.template==="specs" ? "規格表" : "比價卡";
+    var tplName = c.template==="combo" ? "組合卡" : c.template==="specs" ? "規格表" :
+      c.template==="dome" ? "大巨蛋卡" : "比價卡";
     var text = "";
     if (c.template==="combo") text = c.comboHeadline;
     else if (c.template==="specs") text = c.specsHeadline1;
+    else if (c.template==="dome") text = (c.domeHeadline||"").split("\n")[0];
     else text = (c.compareLines||"").split("\n")[0];
     text = (text||"").replace(/\*\*/g,"").trim();
     return tplName + (text ? "｜"+text : "");
@@ -706,11 +945,15 @@
   function renderComboItems(){
     var box = document.getElementById("comboItemsList");
     box.innerHTML = (state.items||[]).map(function(item, i){
-      return '<div class="row-item">'
-        + '<input type="text" class="combo-item-input" data-idx="'+i+'" value="'+esc(item)+'">'
-        + '<button type="button" class="btn-remove" data-idx="'+i+'">×</button>'
+      return '<div class="row-item-group">'
+        + '<div class="row-item">'
+          + '<input type="text" class="combo-item-input" data-idx="'+i+'" value="'+esc(item)+'">'
+          + '<button type="button" class="btn-remove" data-idx="'+i+'">×</button>'
+        + '</div>'
+        + lineToolsHTML("combo.item."+i)
       + '</div>';
     }).join("");
+    syncLineTools();
   }
 
   /* ---------- specs dynamic rows ---------- */
@@ -719,13 +962,51 @@
     box.innerHTML = (state.rows||[]).map(function(r, i){
       return '<div class="row-group" data-idx="'+i+'">'
         + '<label class="field"><span class="lbl">名稱 / 型號</span><input type="text" class="specs-row-name-input" data-idx="'+i+'" value="'+esc(r.name)+'"></label>'
+        + lineToolsHTML("specs.row."+i+".name")
         + '<label class="field"><span class="lbl">規格說明（可分行）</span><textarea class="specs-row-spec-input" data-idx="'+i+'" rows="2">'+esc(r.spec)+'</textarea></label>'
+        + lineToolsHTML("specs.row."+i+".spec")
         + '<div class="row2">'
           + '<label class="field"><span class="lbl">價格</span><input type="text" class="specs-row-price-input" data-idx="'+i+'" value="'+esc(r.price)+'"></label>'
           + '<label class="field" style="align-self:end;"><button type="button" class="btn-remove specs-row-remove" data-idx="'+i+'" style="width:100%;">刪除此列</button></label>'
         + '</div>'
+        + lineToolsHTML("specs.row."+i+".price")
       + '</div>';
     }).join("");
+    syncLineTools();
+  }
+
+  /* ---------- dome dynamic price rows ---------- */
+  function renderDomeRows(){
+    var box = document.getElementById("domeRowsList");
+    box.innerHTML = (state.domeRows||[]).map(function(r, i){
+      return '<div class="row-group" data-idx="'+i+'">'
+        + '<div class="row2">'
+          + '<label class="field"><span class="lbl">標籤</span><input type="text" class="dome-row-label-input" data-idx="'+i+'" value="'+esc(r.label)+'"></label>'
+          + '<label class="field"><span class="lbl">單位</span><input type="text" class="dome-row-unit-input" data-idx="'+i+'" value="'+esc(r.unit)+'"></label>'
+        + '</div>'
+        + '<label class="field"><span class="lbl">金額</span><input type="text" class="dome-row-value-input" data-idx="'+i+'" value="'+esc(r.value)+'"></label>'
+        + '<label class="inline"><input type="checkbox" class="dome-row-highlight-input" data-idx="'+i+'"'+(r.highlight?' checked':'')+'> <span class="tiny">特價／強調（套用強調色）</span></label>'
+        + lineToolsHTML("dome.row."+i)
+        + '<button type="button" class="btn-remove dome-row-remove" data-idx="'+i+'" style="width:100%;margin-top:6px;">刪除此列</button>'
+      + '</div>';
+    }).join("");
+    syncLineTools();
+  }
+
+  /* ---------- compare per-line tools (mirrors compareLines textarea) ---------- */
+  function renderCompareLineTools(){
+    var box = document.getElementById("compareLineTools");
+    var lines = (state.compareLines||"").split("\n");
+    box.innerHTML = lines.map(function(l, idx){
+      if (!l || l.trim()==="") return "";
+      var label = l.replace(/\*\*/g,"").trim();
+      if (label.length > 14) label = label.slice(0,14)+"…";
+      return '<div class="linetool-row">'
+        + '<span class="linetool-label">第'+(idx+1)+'行：'+esc(label)+'</span>'
+        + lineToolsHTML("compare.line."+idx)
+      + '</div>';
+    }).join("");
+    syncLineTools();
   }
 
   /* ---------- populate form from state ---------- */
@@ -736,6 +1017,7 @@
     document.getElementById("formCombo").classList.toggle("hidden", state.template!=="combo");
     document.getElementById("formSpecs").classList.toggle("hidden", state.template!=="specs");
     document.getElementById("formCompare").classList.toggle("hidden", state.template!=="compare");
+    document.getElementById("formDome").classList.toggle("hidden", state.template!=="dome");
 
     document.getElementById("sizeW").value = state.size.w;
     document.getElementById("sizeH").value = state.size.h;
@@ -775,12 +1057,13 @@
       renderSpecsRows();
       document.getElementById("specsAccent").value = state.specsAccent;
       document.getElementById("specsRowShade").value = state.specsRowShade;
-    } else {
+    } else if (state.template==="compare"){
       fillBrandSelect(document.getElementById("compareBrand"), state.compareBrand);
       document.getElementById("compareLogoScale").value = state.compareLogoScale || 1;
       document.getElementById("compareLogoScaleVal").textContent = Math.round((state.compareLogoScale||1)*100)+"%";
       document.getElementById("compareShowLogo").checked = !!state.compareShowLogo;
       document.getElementById("compareLines").value = state.compareLines;
+      renderCompareLineTools();
       document.getElementById("compareModel").value = state.compareModel;
       document.getElementById("compareOrigLabel").value = state.compareOrigLabel;
       document.getElementById("compareOrigPrice").value = state.compareOrigPrice;
@@ -789,11 +1072,38 @@
       document.getElementById("compareSpecialPrice").value = state.compareSpecialPrice;
       document.getElementById("compareSpecialUnit").value = state.compareSpecialUnit;
       document.getElementById("compareAccent").value = state.compareAccent;
+    } else if (state.template==="dome"){
+      document.getElementById("domeBg").value = state.domeBg || "12x8";
+      fillBrandSelect(document.getElementById("domeBrand"), state.domeBrand);
+      document.getElementById("domeLogoScale").value = state.domeLogoScale || 1;
+      document.getElementById("domeLogoScaleVal").textContent = Math.round((state.domeLogoScale||1)*100)+"%";
+      document.getElementById("domeLogoAlign").value = state.domeLogoAlign || "center";
+      document.getElementById("domeHeadline").value = state.domeHeadline;
+      document.getElementById("domeSub").value = state.domeSub;
+      renderDomeRows();
+      document.getElementById("domeAccent").value = state.domeAccent;
     }
+    syncLineTools();
   }
 
   /* ---------- events ---------- */
   function bindStatic(){
+    var panelEl = document.querySelector(".panel");
+    panelEl.addEventListener("input", function(e){
+      if (!e.target.classList.contains("lt-size")) return;
+      var key = e.target.dataset.key;
+      var val = parseFloat(e.target.value) || 1;
+      var wrap = e.target.closest(".linetools");
+      if (wrap){ var v = wrap.querySelector(".lt-sizeval"); if (v) v.textContent = Math.round(val*100)+"%"; }
+      setLineFontScale(key, val);
+    });
+    panelEl.addEventListener("click", function(e){
+      var resetBtn = e.target.closest(".lt-reset");
+      if (resetBtn){ resetLineStyle(resetBtn.dataset.key); return; }
+      var dirBtn = e.target.closest(".lt-btn");
+      if (dirBtn){ nudgeLine(dirBtn.dataset.key, dirBtn.dataset.dir); return; }
+    });
+
     document.getElementById("templateTabs").addEventListener("click", function(e){
       var btn = e.target.closest("button[data-tpl]");
       if (!btn) return;
@@ -966,7 +1276,7 @@
       document.getElementById("compareLogoScaleVal").textContent = Math.round(state.compareLogoScale*100)+"%";
       renderCard();
     });
-    document.getElementById("compareLines").addEventListener("input", function(){ state.compareLines=this.value; renderCard(); });
+    document.getElementById("compareLines").addEventListener("input", function(){ state.compareLines=this.value; renderCompareLineTools(); renderCard(); });
     document.getElementById("compareModel").addEventListener("input", function(){ state.compareModel=this.value; renderCard(); });
     document.getElementById("compareOrigLabel").addEventListener("input", function(){ state.compareOrigLabel=this.value; renderCard(); });
     document.getElementById("compareOrigPrice").addEventListener("input", function(){ state.compareOrigPrice=this.value; renderCard(); });
@@ -975,6 +1285,60 @@
     document.getElementById("compareSpecialPrice").addEventListener("input", function(){ state.compareSpecialPrice=this.value; renderCard(); });
     document.getElementById("compareSpecialUnit").addEventListener("input", function(){ state.compareSpecialUnit=this.value; renderCard(); });
     document.getElementById("compareAccent").addEventListener("input", function(){ state.compareAccent=this.value; renderCard(); });
+
+    /* ---- dome ---- */
+    document.getElementById("domeBg").addEventListener("change", function(){
+      state.domeBg = this.value;
+      if (SIZE_PRESETS[this.value]){
+        state.size = {w:SIZE_PRESETS[this.value].w, h:SIZE_PRESETS[this.value].h};
+      }
+      state.domeLogoAlign = this.value === "7x4" ? "left" : "center";
+      var sample = DOME_SAMPLES[this.value];
+      if (sample){
+        state.domeBrand = sample.domeBrand;
+        state.domeBrandUpload = sample.domeBrandUpload;
+        state.domeHeadline = sample.domeHeadline;
+        state.domeSub = sample.domeSub;
+        state.domeRows = clone(sample.domeRows);
+        state.lineStyles = {};
+      }
+      populateForm();
+      renderCard();
+    });
+    document.getElementById("domeBrand").addEventListener("change", function(){ state.domeBrand=this.value; renderCard(); });
+    document.getElementById("domeBrandUpload").addEventListener("change", function(){
+      var f=this.files[0]; if(!f) return;
+      fileToDataUrl(f, function(url){ state.domeBrandUpload=url; renderCard(); });
+    });
+    document.getElementById("domeLogoScale").addEventListener("input", function(){
+      state.domeLogoScale = parseFloat(this.value) || 1;
+      document.getElementById("domeLogoScaleVal").textContent = Math.round(state.domeLogoScale*100)+"%";
+      renderCard();
+    });
+    document.getElementById("domeLogoAlign").addEventListener("change", function(){ state.domeLogoAlign=this.value; renderCard(); });
+    document.getElementById("domeHeadline").addEventListener("input", function(){ state.domeHeadline=this.value; renderCard(); });
+    document.getElementById("domeSub").addEventListener("input", function(){ state.domeSub=this.value; renderCard(); });
+    document.getElementById("domeAddRow").addEventListener("click", function(){
+      state.domeRows.push({label:"", value:"", unit:"元", highlight:false}); renderDomeRows(); renderCard();
+    });
+    document.getElementById("domeRowsList").addEventListener("input", function(e){
+      var idx = e.target.dataset.idx; if (idx===undefined) return;
+      if (e.target.classList.contains("dome-row-label-input")) state.domeRows[+idx].label = e.target.value;
+      else if (e.target.classList.contains("dome-row-value-input")) state.domeRows[+idx].value = e.target.value;
+      else if (e.target.classList.contains("dome-row-unit-input")) state.domeRows[+idx].unit = e.target.value;
+      else return;
+      renderCard();
+    });
+    document.getElementById("domeRowsList").addEventListener("change", function(e){
+      if (!e.target.classList.contains("dome-row-highlight-input")) return;
+      var idx = e.target.dataset.idx; if (idx===undefined) return;
+      state.domeRows[+idx].highlight = e.target.checked; renderCard();
+    });
+    document.getElementById("domeRowsList").addEventListener("click", function(e){
+      if (!e.target.classList.contains("dome-row-remove")) return;
+      state.domeRows.splice(+e.target.dataset.idx,1); renderDomeRows(); renderCard();
+    });
+    document.getElementById("domeAccent").addEventListener("input", function(){ state.domeAccent=this.value; renderCard(); });
   }
 
   function init(){
@@ -987,6 +1351,7 @@
     state = deck.cards[activeIndex];
     document.getElementById("pageGap").value = pageGap;
     document.getElementById("pageGapVal").textContent = pageGap.toFixed(1)+"cm";
+    initStaticLineTools();
     bindStatic();
     populateForm();
     renderCard();
