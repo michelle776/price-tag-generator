@@ -200,6 +200,7 @@
   .dome-row-unit{ font-size:calc(3cqw * var(--fontscale,1) * var(--ls,1)); font-weight:500; }
   .dome-row-value.hl{ font-size:calc(5.4cqw * var(--fontscale,1) * var(--ls,1)); color:var(--accent,#d3311f); }
   .dome-row-unit.hl{ color:var(--accent,#d3311f); }
+  .dome-dim{ font-size:calc(2.6cqw * var(--fontscale,1) * var(--ls,1)); font-weight:700; line-height:calc(1.3 * var(--lhmul,1)); margin:1.6cqw 0 0; text-wrap:balance; }
 
   /* ---------- print (prints exactly what the A4 preview shows) ---------- */
   @media print{
@@ -250,9 +251,10 @@
         <select id="sizePreset">
           <option value="15x10">15 × 10 cm（橫式・組合卡常用）</option>
           <option value="11x15">11 × 15 cm（直式・規格表常用）</option>
-          <option value="7x4">7 × 4 cm（橫式・小卡常用）</option>
+          <option value="7x4">7 × 4 cm（大巨蛋耳機價格牌）</option>
           <option value="7.5x4">7.5 × 4 cm（橫式・小卡常用）</option>
-          <option value="12x8">12 × 8 cm（橫式・大巨蛋門市卡常用）</option>
+          <option value="12x8">12 × 8 cm（大巨蛋音響櫃壓克力尺寸）</option>
+          <option value="12x9.5">12 × 9.5 cm（大巨蛋LG家電價格牌）</option>
           <option value="custom">自訂尺寸</option>
         </select>
       </label>
@@ -388,7 +390,8 @@
         <legend>底圖版型</legend>
         <label class="field"><span class="lbl">背景底圖</span>
           <select id="domeBg">
-            <option value="12x8">12 × 8 cm 版面</option>
+            <option value="12x9.5">12 × 9.5 cm 版面</option>
+            <option value="12x8">12 × 8 cm 版面（音響櫃壓克力）</option>
             <option value="7x4">7 × 4 cm 版面</option>
           </select>
         </label>
@@ -415,6 +418,10 @@
         <legend>價格列</legend>
         <div class="listbox" id="domeRowsList"></div>
         <button type="button" class="btn-add" id="domeAddRow">+ 新增一列價格</button>
+      </fieldset>
+      <fieldset>
+        <legend>最下方備註（選用，預設為產品尺寸）</legend>
+        <label class="field"><span class="lbl">內容（顯示於價格下方一行）</span><input type="text" id="domeDim"></label>
       </fieldset>
       <fieldset>
         <legend>顏色</legend>
@@ -477,24 +484,47 @@
     "11x15": {w:11, h:15},
     "7x4":   {w:7,  h:4},
     "7.5x4": {w:7.5,h:4},
-    "12x8":  {w:12, h:8}
+    "12x8":  {w:12, h:8},
+    "12x9.5":{w:12, h:9.5}
   };
 
   var DOME_BG = {
+    "12x9.5": "templates/dome-bg-12X9.5.jpg",
     "12x8": "templates/dome-bg-12x8.jpg",
     "7x4":  "templates/dome-bg-7x4.jpg"
   };
 
   // sample content applied when the matching background variant is picked
   var DOME_SAMPLES = {
-    "12x8": {
+    "12x9.5": {
       domeBrand:"lg-color", domeBrandUpload:"",
-      domeHeadline:"PuriCare™ 360°空氣清淨機\n寵物功能增加版二代-旗艦款/建議32坪 (雙層)",
-      domeSub:"AS111NGY1",
+      domeHeadline:"23公斤直立式洗衣機 EZ 系列\n夜墨灰｜AI DD™ 蒸氣直驅變頻",
+      domeSub:"WT-TD23HG",
       domeRows:[
-        {label:"售價", value:"40,800", unit:"元", highlight:false},
-        {label:"特價", value:"39,800", unit:"元", highlight:true}
-      ]
+        {label:"售價", value:"32,900", unit:"元", highlight:false},
+        {label:"特價", value:"29,900", unit:"元", highlight:true}
+      ],
+      domeDim:"產品尺寸 (WxHxD mm) 686x1092x721",
+      lineStyles:{
+        "dome.headline":{fontScale:1.2, dx:0, dy:0},
+        "dome.sub":{fontScale:1.5, dx:0, dy:0},
+        "dome.row.1":{fontScale:1.2, dx:0, dy:0},
+        "dome.dim":{fontScale:1.25, dx:0, dy:0}
+      }
+    },
+    "12x8": {
+      domeBrand:"devialet", domeBrandUpload:"",
+      domeHeadline:"Devialet Dione Soundbar 聲霸",
+      domeSub:"巴黎歌劇院款",
+      domeRows:[
+        {label:"建議售價", value:"113,900", unit:"元", highlight:false}
+      ],
+      domeDim:"",
+      lineStyles:{
+        "dome.headline":{fontScale:1.25, dx:0, dy:0},
+        "dome.sub":{fontScale:1.5, dx:0, dy:1.5},
+        "dome.row.0":{fontScale:1.3, dx:0, dy:-1.5}
+      }
     },
     "7x4": {
       domeBrand:"audiotechnica", domeBrandUpload:"",
@@ -502,7 +532,8 @@
       domeSub:"綠色",
       domeRows:[
         {label:"建議售價", value:"2,800", unit:"元", highlight:false}
-      ]
+      ],
+      domeDim:""
     }
   };
 
@@ -556,17 +587,23 @@
     },
     dome: {
       template:"dome",
-      size:{w:12,h:8}, copies:1, cutGuides:false,
-      domeBg:"12x8",
+      size:{w:12,h:9.5}, copies:1, cutGuides:false,
+      domeBg:"12x9.5",
       domeBrand:"lg-color", domeBrandUpload:"", domeLogoScale:1, domeLogoAlign:"center", lineHeightScale:1, fontScale:1,
-      domeHeadline:"PuriCare™ 360°空氣清淨機\n寵物功能增加版二代-旗艦款/建議32坪 (雙層)",
-      domeSub:"AS111NGY1",
+      domeHeadline:"23公斤直立式洗衣機 EZ 系列\n夜墨灰｜AI DD™ 蒸氣直驅變頻",
+      domeSub:"WT-TD23HG",
       domeRows:[
-        {label:"售價", value:"40,800", unit:"元", highlight:false},
-        {label:"特價", value:"39,800", unit:"元", highlight:true}
+        {label:"售價", value:"32,900", unit:"元", highlight:false},
+        {label:"特價", value:"29,900", unit:"元", highlight:true}
       ],
+      domeDim:"產品尺寸 (WxHxD mm) 686x1092x721",
       domeAccent:"#d3311f",
-      lineStyles:{}
+      lineStyles:{
+        "dome.headline":{fontScale:1.2, dx:0, dy:0},
+        "dome.sub":{fontScale:1.5, dx:0, dy:0},
+        "dome.row.1":{fontScale:1.2, dx:0, dy:0},
+        "dome.dim":{fontScale:1.25, dx:0, dy:0}
+      }
     }
   };
 
@@ -594,7 +631,7 @@
         }
       }
     }catch(e){}
-    return {cards:[clone(DEFAULTS.combo)], activeIndex:0, gap:0.4};
+    return {cards:[clone(DEFAULTS.dome)], activeIndex:0, gap:0.4};
   }
 
   function saveState(){
@@ -703,6 +740,7 @@
     injectLineTools("compareSpecialRow", "compare.specialLine");
     injectLineTools("domeHeadline", "dome.headline");
     injectLineTools("domeSub", "dome.sub");
+    injectLineTools("domeDim", "dome.dim");
   }
 
   /* ---------- card builders ---------- */
@@ -787,7 +825,8 @@
         + '<span class="dome-row-unit'+hl+'">'+fmt(r.unit)+'</span>'
       + '</span>';
     }).join("");
-    var bgFile = DOME_BG[s.domeBg] || DOME_BG["12x8"];
+    var dimHTML = (s.domeDim||"").trim() ? '<p class="dome-dim" style="'+lineStyleAttr(s,"dome.dim")+'">'+fmt(s.domeDim)+'</p>' : "";
+    var bgFile = DOME_BG[s.domeBg] || DOME_BG["12x9.5"];
     var stacked = s.domeBg !== "7x4";
     var bottomPad = s.domeBg === "7x4" ? "15cqw" : "14cqw";
     return '<div class="cardface dome" style="background-image:url(\''+bgFile+'\');--accent:'+esc(s.domeAccent)+';--lhmul:'+(s.lineHeightScale||1)+';--fontscale:'+(s.fontScale||1)+';--dome-bottompad:'+bottomPad+'">'
@@ -796,6 +835,7 @@
         + '<h1 class="dome-headline" style="'+lineStyleAttr(s,"dome.headline")+'">'+headlineHTML+'</h1>'
         + subHTML
         + '<div class="dome-rows '+(stacked?'stacked ':'')+logoAlign+'">'+rowsHTML+'</div>'
+        + dimHTML
       + '</div>'
     + '</div>';
   }
@@ -975,6 +1015,40 @@
     syncLineTools();
   }
 
+  /* ---------- dome background variant <-> size sync ---------- */
+  // finds the DOME_BG key whose preset size matches the given w/h, if any
+  function matchDomeBgKeyForSize(w, h){
+    return Object.keys(DOME_BG).filter(function(k){
+      return SIZE_PRESETS[k] && SIZE_PRESETS[k].w===w && SIZE_PRESETS[k].h===h;
+    })[0] || null;
+  }
+  // applies a dome background variant to the current card; resetContent also swaps in that
+  // variant's sample text/rows/line-sizes (used when the user explicitly picks a variant)
+  function applyDomeBgVariant(key, resetContent){
+    state.domeBg = key;
+    state.domeLogoAlign = key === "7x4" ? "left" : "center";
+    if (resetContent){
+      var sample = DOME_SAMPLES[key];
+      if (sample){
+        state.domeBrand = sample.domeBrand;
+        state.domeBrandUpload = sample.domeBrandUpload;
+        state.domeHeadline = sample.domeHeadline;
+        state.domeSub = sample.domeSub;
+        state.domeRows = clone(sample.domeRows);
+        state.domeDim = sample.domeDim || "";
+        state.lineStyles = sample.lineStyles ? clone(sample.lineStyles) : {};
+      }
+    }
+  }
+  // keeps the dome background variant in sync when the size changes via the generic
+  // size preset / width / height controls (rather than the 背景底圖 dropdown itself)
+  function syncDomeBgToSize(){
+    if (!state || state.template !== "dome") return false;
+    var key = matchDomeBgKeyForSize(state.size.w, state.size.h);
+    if (key && key !== state.domeBg){ applyDomeBgVariant(key, false); return true; }
+    return false;
+  }
+
   /* ---------- dome dynamic price rows ---------- */
   function renderDomeRows(){
     var box = document.getElementById("domeRowsList");
@@ -1073,7 +1147,7 @@
       document.getElementById("compareSpecialUnit").value = state.compareSpecialUnit;
       document.getElementById("compareAccent").value = state.compareAccent;
     } else if (state.template==="dome"){
-      document.getElementById("domeBg").value = state.domeBg || "12x8";
+      document.getElementById("domeBg").value = state.domeBg || "12x9.5";
       fillBrandSelect(document.getElementById("domeBrand"), state.domeBrand);
       document.getElementById("domeLogoScale").value = state.domeLogoScale || 1;
       document.getElementById("domeLogoScaleVal").textContent = Math.round((state.domeLogoScale||1)*100)+"%";
@@ -1081,6 +1155,7 @@
       document.getElementById("domeHeadline").value = state.domeHeadline;
       document.getElementById("domeSub").value = state.domeSub;
       renderDomeRows();
+      document.getElementById("domeDim").value = state.domeDim || "";
       document.getElementById("domeAccent").value = state.domeAccent;
     }
     syncLineTools();
@@ -1156,16 +1231,21 @@
         state.size = {w:SIZE_PRESETS[v].w, h:SIZE_PRESETS[v].h};
         document.getElementById("sizeW").value = state.size.w;
         document.getElementById("sizeH").value = state.size.h;
+        if (syncDomeBgToSize()) populateForm();
         renderCard();
       }
     });
     document.getElementById("sizeW").addEventListener("input", function(){
       var v = parseFloat(this.value); if (!v || v<=0) return;
-      state.size.w = v; document.getElementById("sizePreset").value = "custom"; renderCard();
+      state.size.w = v; document.getElementById("sizePreset").value = "custom";
+      if (syncDomeBgToSize()) populateForm();
+      renderCard();
     });
     document.getElementById("sizeH").addEventListener("input", function(){
       var v = parseFloat(this.value); if (!v || v<=0) return;
-      state.size.h = v; document.getElementById("sizePreset").value = "custom"; renderCard();
+      state.size.h = v; document.getElementById("sizePreset").value = "custom";
+      if (syncDomeBgToSize()) populateForm();
+      renderCard();
     });
     document.getElementById("copies").addEventListener("input", function(){
       state.copies = parseInt(this.value,10) || 1; renderCard();
@@ -1288,20 +1368,10 @@
 
     /* ---- dome ---- */
     document.getElementById("domeBg").addEventListener("change", function(){
-      state.domeBg = this.value;
       if (SIZE_PRESETS[this.value]){
         state.size = {w:SIZE_PRESETS[this.value].w, h:SIZE_PRESETS[this.value].h};
       }
-      state.domeLogoAlign = this.value === "7x4" ? "left" : "center";
-      var sample = DOME_SAMPLES[this.value];
-      if (sample){
-        state.domeBrand = sample.domeBrand;
-        state.domeBrandUpload = sample.domeBrandUpload;
-        state.domeHeadline = sample.domeHeadline;
-        state.domeSub = sample.domeSub;
-        state.domeRows = clone(sample.domeRows);
-        state.lineStyles = {};
-      }
+      applyDomeBgVariant(this.value, true);
       populateForm();
       renderCard();
     });
@@ -1318,6 +1388,7 @@
     document.getElementById("domeLogoAlign").addEventListener("change", function(){ state.domeLogoAlign=this.value; renderCard(); });
     document.getElementById("domeHeadline").addEventListener("input", function(){ state.domeHeadline=this.value; renderCard(); });
     document.getElementById("domeSub").addEventListener("input", function(){ state.domeSub=this.value; renderCard(); });
+    document.getElementById("domeDim").addEventListener("input", function(){ state.domeDim=this.value; renderCard(); });
     document.getElementById("domeAddRow").addEventListener("click", function(){
       state.domeRows.push({label:"", value:"", unit:"元", highlight:false}); renderDomeRows(); renderCard();
     });
