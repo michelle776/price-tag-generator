@@ -476,27 +476,29 @@
 
   var BRANDS = [
     {id:"", name:"（無品牌圖）", file:""},
-    {id:"audiotechnica", name:"Audio-Technica 鐵三角", file:"logos/audiotechnica.png"},
-    {id:"audioquest", name:"AudioQuest", file:"logos/audioquest.png"},
-    {id:"bo", name:"B&O", file:"logos/bo.png"},
-    {id:"bw", name:"B&W", file:"logos/bw.png"},
+    {id:"audiotechnica", name:"Audio-Technica 鐵三角", file:"logos/SVG/LOGO_鐵三角.svg"},
+    {id:"audioquest", name:"AudioQuest", file:"logos/SVG/LOGO_AQ.svg"},
+    {id:"bo", name:"B&O", file:"logos/SVG/LOGO_B&O.svg"},
+    {id:"bose", name:"Bose", file:"logos/SVG/LOGO_BOSE.svg"},
+    {id:"bw", name:"B&W", file:"logos/SVG/LOGO_B&W.svg"},
     {id:"cado", name:"cado", file:"logos/cado.png"},
     {id:"cambridge", name:"Cambridge Audio", file:"logos/cambridge.png"},
-    {id:"denon", name:"DENON", file:"logos/denon.png"},
-    {id:"devialet", name:"Devialet", file:"logos/Devialet.png"},
+    {id:"denon", name:"DENON", file:"logos/SVG/LOGO_DENON.svg"},
+    {id:"devialet", name:"Devialet", file:"logos/SVG/LOGO_DEVIALET.svg"},
     {id:"dynaudio", name:"Dynaudio", file:"logos/dynaudio.png"},
-    {id:"hitachi", name:"Hitachi", file:"logos/hitachi.png"},
+    {id:"harmankardon", name:"Harman Kardon", file:"logos/SVG/LOGO_harman-kardon.svg"},
+    {id:"hitachi", name:"Hitachi", file:"logos/SVG/LOGO_HITACHI 日立.svg"},
     {id:"lg", name:"LG", file:"logos/lg.png"},
     {id:"lg-color", name:"LG（彩色）", file:"logos/lg-color.png"},
-    {id:"linn", name:"Linn", file:"logos/linn.png"},
-    {id:"marantz", name:"Marantz", file:"logos/marantz.png"},
-    {id:"mcintosh", name:"McIntosh", file:"logos/mcintosh.png"},
+    {id:"linn", name:"Linn", file:"logos/SVG/LOGO_LINN.svg"},
+    {id:"marantz", name:"Marantz", file:"logos/SVG/LOGO_marantz.svg"},
+    {id:"mcintosh", name:"McIntosh", file:"logos/SVG/LOGO_McIntosh.svg"},
     {id:"podspeakers", name:"Podspeakers", file:"logos/podspeakers.png"},
-    {id:"samsung", name:"Samsung 三星", file:"logos/samsung.png"},
-    {id:"sharp", name:"Sharp", file:"logos/sharp.png"},
-    {id:"sonusfaber", name:"Sonus faber", file:"logos/sonusfaber.png"},
-    {id:"sony", name:"SONY", file:"logos/sony.png"},
-    {id:"imageaudio", name:"映象音響 ImageAudio", file:"logos/imageaudio.png"}
+    {id:"samsung", name:"Samsung 三星", file:"logos/SVG/LOGO_三星.svg"},
+    {id:"sharp", name:"Sharp", file:"logos/SVG/LOGO_SHARP.svg"},
+    {id:"sonusfaber", name:"Sonus faber", file:"logos/SVG/LOGO_Sonus faber.svg"},
+    {id:"sony", name:"SONY", file:"logos/SVG/LOGO_SONY.svg"},
+    {id:"imageaudio", name:"映象音響 ImageAudio", file:"logos/SVG/LOGO_IMAGEAUDIO 映象.svg"}
   ];
 
   var SIZE_PRESETS = {
@@ -572,7 +574,7 @@
       domeTableCurrency:"NT $",
       domeRowShade:"#ece5da",
       domeAccent:"#93332a",
-      domeLogoScale:0.55,
+      domeLogoScale:1,
       domeDim:"",
       lineStyles:{
         "dome.table.0.name":{fontScale:1.1, dx:0, dy:0},
@@ -715,7 +717,7 @@
     var src = uploadUrl || brandFile(id);
     if (!src) return "";
     var s = (typeof scale === "number" && scale > 0) ? scale : 1;
-    return '<img src="'+src+'" class="'+cls+'" style="--logoscale:'+s+'" alt="logo">';
+    return '<img src="'+esc(src)+'" class="'+cls+'" style="--logoscale:'+s+'" alt="logo">';
   }
 
   /* ---------- per-line fine-tune (font size + up/down/left/right nudge) ---------- */
