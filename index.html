@@ -164,6 +164,7 @@
   .specs-row-name{ font-size:calc(3.4cqw * var(--fontscale,1) * var(--ls,1)); font-weight:700; line-height:calc(1.2 * var(--lhmul,1)); margin-bottom:0.4cqw; }
   .specs-row-spec{ font-size:calc(2cqw * var(--fontscale,1) * var(--ls,1)); color:#4a4642; line-height:calc(1.35 * var(--lhmul,1)); }
   .specs-row-price{ font-size:calc(4.4cqw * var(--fontscale,1) * var(--ls,1)); font-weight:800; font-variant-numeric:tabular-nums; white-space:nowrap; line-height:1; }
+  .specs-rule, .specs-rows{ align-self:stretch; width:100%; } /* keep full-width table even inside a centered/left flex parent (dome reuses these classes) */
 
   /* compare template */
   .cardface.compare{ align-items:center; justify-content:center; text-align:center; gap:0.9cqw; padding:4.6cqw; }
@@ -189,6 +190,7 @@
   .dome-content.align-center{ align-items:center; text-align:center; }
   .dome-content.align-left{ align-items:flex-start; text-align:left; }
   .dome-headline{ font-size:calc(3.6cqw * var(--fontscale,1) * var(--ls,1)); font-weight:800; line-height:calc(1.28 * var(--lhmul,1)); margin:0; text-wrap:balance; }
+  .dome-headline .hl{ color:var(--accent,#c0392b); }
   .dome-sub{ font-size:calc(2.3cqw * var(--fontscale,1) * var(--ls,1)); color:#6b6660; font-weight:500; margin:1cqw 0 0; }
   .dome-rows{ display:flex; flex-wrap:wrap; align-items:baseline; column-gap:2.6cqw; row-gap:0.9cqw; margin-top:auto; }
   .dome-rows.stacked{ flex-direction:column; }
@@ -201,6 +203,14 @@
   .dome-row-value.hl{ font-size:calc(5.4cqw * var(--fontscale,1) * var(--ls,1)); color:var(--accent,#d3311f); }
   .dome-row-unit.hl{ color:var(--accent,#d3311f); }
   .dome-dim{ font-size:calc(2.6cqw * var(--fontscale,1) * var(--ls,1)); font-weight:700; line-height:calc(1.3 * var(--lhmul,1)); margin:1.6cqw 0 0; text-wrap:balance; }
+  /* let the alternating row shade bleed edge-to-edge past dome-content's side padding, while keeping the text inset the same as before */
+  .dome-table-rows{ margin:0 -7cqw; width:calc(100% + 14cqw); }
+  .dome-table-rows .specs-row{ padding-left:calc(1.8cqw + 7cqw); padding-right:calc(1.8cqw + 7cqw); }
+  /* dome table row price: single amount, or optional 售價/特價 pair (each selectable as red/accent) */
+  .specs-row-price.dome-table-price{ display:flex; flex-direction:column; align-items:flex-end; gap:0.4cqw; }
+  .dome-table-price .dtp-orig{ font-size:calc(2.6cqw * var(--fontscale,1) * var(--ls,1)); font-weight:600; color:#4a4642; }
+  .dome-table-price .dtp-special{ font-size:calc(4cqw * var(--fontscale,1) * var(--ls,1)); font-weight:800; }
+  .specs-row-price .red-price, .specs-row-price.red-price{ color:var(--accent,#c0392b); }
 
   /* ---------- print (prints exactly what the A4 preview shows) ---------- */
   @media print{
@@ -255,6 +265,7 @@
           <option value="7.5x4">7.5 × 4 cm（橫式・小卡常用）</option>
           <option value="12x8">12 × 8 cm（大巨蛋音響櫃壓克力尺寸）</option>
           <option value="12x9.5">12 × 9.5 cm（大巨蛋LG家電價格牌）</option>
+          <option value="11x16">11 × 16 cm（大巨蛋規格價目表卡）</option>
           <option value="custom">自訂尺寸</option>
         </select>
       </label>
@@ -393,6 +404,7 @@
             <option value="12x9.5">12 × 9.5 cm 版面</option>
             <option value="12x8">12 × 8 cm 版面（音響櫃壓克力）</option>
             <option value="7x4">7 × 4 cm 版面</option>
+            <option value="11x16">11 × 16 cm 版面（規格價目表式）</option>
           </select>
         </label>
       </fieldset>
@@ -412,12 +424,19 @@
       <fieldset>
         <legend>商品內容</legend>
         <label class="field"><span class="lbl">標題（商品名稱，可用 **文字** 加粗）</span><textarea id="domeHeadline" rows="2"></textarea></label>
+        <label class="field"><span class="lbl">標題中要強調的文字（會套用強調色，選用）</span><input type="text" id="domeHighlight"></label>
         <label class="field"><span class="lbl">副標（型號 / 顏色，選用，較小灰字）</span><input type="text" id="domeSub"></label>
       </fieldset>
-      <fieldset>
+      <fieldset id="domeRowsFieldset">
         <legend>價格列</legend>
         <div class="listbox" id="domeRowsList"></div>
         <button type="button" class="btn-add" id="domeAddRow">+ 新增一列價格</button>
+      </fieldset>
+      <fieldset id="domeTableFieldset">
+        <legend>規格 / 價格列（規格價目表式）</legend>
+        <label class="field"><span class="lbl">價格前綴</span><input type="text" id="domeTableCurrency"></label>
+        <div class="listbox" id="domeTableRowsList"></div>
+        <button type="button" class="btn-add" id="domeTableAddRow">+ 新增一列</button>
       </fieldset>
       <fieldset>
         <legend>最下方備註（選用，預設為產品尺寸）</legend>
@@ -426,6 +445,7 @@
       <fieldset>
         <legend>顏色</legend>
         <label class="field"><span class="lbl">強調色（勾選「特價／強調」的列會套用此色）</span><input type="color" id="domeAccent"></label>
+        <label class="field"><span class="lbl">隔行底色（規格價目表式專用）</span><input type="color" id="domeRowShade"></label>
       </fieldset>
     </div>
   </aside>
@@ -485,13 +505,15 @@
     "7x4":   {w:7,  h:4},
     "7.5x4": {w:7.5,h:4},
     "12x8":  {w:12, h:8},
-    "12x9.5":{w:12, h:9.5}
+    "12x9.5":{w:12, h:9.5},
+    "11x16": {w:11, h:16}
   };
 
   var DOME_BG = {
     "12x9.5": "templates/dome-bg-12X9.5.jpg",
     "12x8": "templates/dome-bg-12x8.jpg",
-    "7x4":  "templates/dome-bg-7x4.jpg"
+    "7x4":  "templates/dome-bg-7x4.jpg",
+    "11x16": "templates/dome-bg-11X16.jpg"
   };
 
   // sample content applied when the matching background variant is picked
@@ -534,6 +556,34 @@
         {label:"建議售價", value:"2,800", unit:"元", highlight:false}
       ],
       domeDim:""
+    },
+    "11x16": {
+      domeBrand:"samsung", domeBrandUpload:"",
+      domeHeadline:"4K Neo QLED 量子電視 QN87D系列\n量子 Mini LED 立體景深強化/AI量子程式演算科技",
+      domeHighlight:"QN87D",
+      domeSub:"",
+      domeRows:[],
+      domeTableRows:[
+        {name:"55吋 QA55QN87DAXXZW", spec:"含底座 W 122.8 H 76.9 D 24.4(CM)\n不含底座 W 122.8 H 70.6 D2.69(CM)", price:"54,900", priceRed:false, specialPrice:"", specialRed:true},
+        {name:"65吋 QA65QN87DAXXZW", spec:"含底座 W 144.7 H 89 D 27.5(CM)\n不含底座 W 144.7 H 82.9 D 2.69(CM)", price:"67,900", priceRed:false, specialPrice:"", specialRed:true},
+        {name:"75吋 QA75QN87DAXXZW", spec:"含底座 W 167 H 101.6 D 27.5(CM)\n不含底座 W 167 H 95.8 D2.77(CM)", price:"94,900", priceRed:false, specialPrice:"", specialRed:true},
+        {name:"85吋 QA85QN87DAXXZW", spec:"含底座 W 189.3 H 114 D 31.1(CM)\n不含底座 W 189.3 H 108.2 D2.79(CM)", price:"209,900", priceRed:false, specialPrice:"", specialRed:true}
+      ],
+      domeTableCurrency:"NT $",
+      domeRowShade:"#ece5da",
+      domeAccent:"#93332a",
+      domeLogoScale:0.55,
+      domeDim:"",
+      lineStyles:{
+        "dome.table.0.name":{fontScale:1.1, dx:0, dy:0},
+        "dome.table.0.spec":{fontScale:1.45, dx:0, dy:1.5},
+        "dome.table.1.name":{fontScale:1.1, dx:0, dy:0},
+        "dome.table.1.spec":{fontScale:1.45, dx:0, dy:1.5},
+        "dome.table.2.name":{fontScale:1.1, dx:0, dy:0},
+        "dome.table.2.spec":{fontScale:1.45, dx:0, dy:1.5},
+        "dome.table.3.name":{fontScale:1.1, dx:0, dy:0},
+        "dome.table.3.spec":{fontScale:1.45, dx:0, dy:1.5}
+      }
     }
   };
 
@@ -592,10 +642,12 @@
       domeBrand:"lg-color", domeBrandUpload:"", domeLogoScale:1, domeLogoAlign:"center", lineHeightScale:1, fontScale:1,
       domeHeadline:"23公斤直立式洗衣機 EZ 系列\n夜墨灰｜AI DD™ 蒸氣直驅變頻",
       domeSub:"WT-TD23HG",
+      domeHighlight:"",
       domeRows:[
         {label:"售價", value:"32,900", unit:"元", highlight:false},
         {label:"特價", value:"29,900", unit:"元", highlight:true}
       ],
+      domeTableRows:[], domeTableCurrency:"NT $", domeRowShade:"#ece5da",
       domeDim:"產品尺寸 (WxHxD mm) 686x1092x721",
       domeAccent:"#d3311f",
       lineStyles:{
@@ -815,28 +867,69 @@
     var logo = brandImgTag(s.domeBrand, s.domeBrandUpload, "dome-logo", s.domeLogoScale);
     var logoAlign = s.domeLogoAlign === "left" ? "align-left" : "align-center";
     var logoHTML = logo ? '<div class="dome-logo-wrap '+logoAlign+'">'+logo+'</div>' : "";
-    var headlineHTML = fmt(s.domeHeadline||"").replace(/\n/g,"<br>");
+    var headlineEsc = esc(s.domeHeadline||"");
+    var domeHi = (s.domeHighlight||"").trim();
+    if (domeHi !== ""){
+      var domeHiEsc = esc(domeHi);
+      headlineEsc = headlineEsc.split(domeHiEsc).join('<span class="hl">'+domeHiEsc+'</span>');
+    }
+    headlineEsc = headlineEsc.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+    var headlineHTML = headlineEsc.replace(/\n/g,"<br>");
     var subHTML = (s.domeSub||"").trim() ? '<p class="dome-sub" style="'+lineStyleAttr(s,"dome.sub")+'">'+fmt(s.domeSub)+'</p>' : "";
-    var rowsHTML = (s.domeRows||[]).map(function(r, i){
-      var hl = r.highlight ? " hl" : "";
-      return '<span class="dome-row" style="'+lineStyleAttr(s,"dome.row."+i)+'">'
-        + '<span class="dome-row-label'+hl+'">'+fmt(r.label)+'</span>'
-        + '<span class="dome-row-value'+hl+'">'+money(r.value)+'</span>'
-        + '<span class="dome-row-unit'+hl+'">'+fmt(r.unit)+'</span>'
-      + '</span>';
-    }).join("");
     var dimHTML = (s.domeDim||"").trim() ? '<p class="dome-dim" style="'+lineStyleAttr(s,"dome.dim")+'">'+fmt(s.domeDim)+'</p>' : "";
     var bgFile = DOME_BG[s.domeBg] || DOME_BG["12x9.5"];
+    var isTable = s.domeBg === "11x16";
     var stacked = s.domeBg !== "7x4";
     var bottomPad = s.domeBg === "7x4" ? "15cqw" : "14cqw";
-    return '<div class="cardface dome" style="background-image:url(\''+bgFile+'\');--accent:'+esc(s.domeAccent)+';--lhmul:'+(s.lineHeightScale||1)+';--fontscale:'+(s.fontScale||1)+';--dome-bottompad:'+bottomPad+'">'
-      + logoHTML
-      + '<div class="dome-content '+logoAlign+'">'
-        + '<h1 class="dome-headline" style="'+lineStyleAttr(s,"dome.headline")+'">'+headlineHTML+'</h1>'
+    var cardStyle = "background-image:url('"+bgFile+"');--accent:"+esc(s.domeAccent)+";--rowshade:"+esc(s.domeRowShade||"#ece5da")+";--lhmul:"+(s.lineHeightScale||1)+";--fontscale:"+(s.fontScale||1)+";--dome-bottompad:"+bottomPad;
+
+    var bodyHTML;
+    if (isTable){
+      // 規格價目表式：多列「名稱/規格 + 價格」，重用 .specs-row 系列樣式
+      var tableRowsHTML = (s.domeTableRows||[]).map(function(r, i){
+        var specHtml = fmt(r.spec||"").replace(/\n/g,"<br>");
+        var currency = esc(s.domeTableCurrency||"");
+        var specialTrim = (r.specialPrice||"").toString().trim();
+        var priceHTML;
+        if (specialTrim !== ""){
+          priceHTML = '<div class="specs-row-price dome-table-price" style="'+lineStyleAttr(s,"dome.table."+i+".price")+'">'
+            + '<span class="dtp-orig'+(r.priceRed?' red-price':'')+'">售價 '+currency+money(r.price)+'</span>'
+            + '<span class="dtp-special'+(r.specialRed!==false?' red-price':'')+'">特價 '+currency+money(r.specialPrice)+'</span>'
+          + '</div>';
+        } else {
+          priceHTML = '<div class="specs-row-price'+(r.priceRed?' red-price':'')+'" style="'+lineStyleAttr(s,"dome.table."+i+".price")+'">'+currency+money(r.price)+'</div>';
+        }
+        return '<div class="specs-row '+(i%2===1?'alt':'')+'">'
+          + '<div class="specs-row-text">'
+            + '<div class="specs-row-name" style="'+lineStyleAttr(s,"dome.table."+i+".name")+'">'+fmt(r.name)+'</div>'
+            + '<div class="specs-row-spec" style="'+lineStyleAttr(s,"dome.table."+i+".spec")+'">'+specHtml+'</div>'
+          + '</div>'
+          + priceHTML
+        + '</div>';
+      }).join("");
+      bodyHTML = '<h1 class="dome-headline" style="'+lineStyleAttr(s,"dome.headline")+'">'+headlineHTML+'</h1>'
+        + subHTML
+        + '<hr class="specs-rule">'
+        + '<div class="specs-rows dome-table-rows">'+tableRowsHTML+'</div>'
+        + dimHTML;
+    } else {
+      var rowsHTML = (s.domeRows||[]).map(function(r, i){
+        var hl = r.highlight ? " hl" : "";
+        return '<span class="dome-row" style="'+lineStyleAttr(s,"dome.row."+i)+'">'
+          + '<span class="dome-row-label'+hl+'">'+fmt(r.label)+'</span>'
+          + '<span class="dome-row-value'+hl+'">'+money(r.value)+'</span>'
+          + '<span class="dome-row-unit'+hl+'">'+fmt(r.unit)+'</span>'
+        + '</span>';
+      }).join("");
+      bodyHTML = '<h1 class="dome-headline" style="'+lineStyleAttr(s,"dome.headline")+'">'+headlineHTML+'</h1>'
         + subHTML
         + '<div class="dome-rows '+(stacked?'stacked ':'')+logoAlign+'">'+rowsHTML+'</div>'
-        + dimHTML
-      + '</div>'
+        + dimHTML;
+    }
+
+    return '<div class="cardface dome" style="'+cardStyle+'">'
+      + logoHTML
+      + '<div class="dome-content '+logoAlign+'">'+bodyHTML+'</div>'
     + '</div>';
   }
 
@@ -1026,16 +1119,22 @@
   // variant's sample text/rows/line-sizes (used when the user explicitly picks a variant)
   function applyDomeBgVariant(key, resetContent){
     state.domeBg = key;
-    state.domeLogoAlign = key === "7x4" ? "left" : "center";
+    state.domeLogoAlign = (key === "7x4" || key === "11x16") ? "left" : "center";
     if (resetContent){
       var sample = DOME_SAMPLES[key];
       if (sample){
         state.domeBrand = sample.domeBrand;
         state.domeBrandUpload = sample.domeBrandUpload;
         state.domeHeadline = sample.domeHeadline;
+        state.domeHighlight = sample.domeHighlight || "";
         state.domeSub = sample.domeSub;
-        state.domeRows = clone(sample.domeRows);
+        state.domeRows = sample.domeRows ? clone(sample.domeRows) : [];
+        state.domeTableRows = sample.domeTableRows ? clone(sample.domeTableRows) : [];
+        state.domeTableCurrency = sample.domeTableCurrency || "NT $";
+        state.domeRowShade = sample.domeRowShade || "#ece5da";
         state.domeDim = sample.domeDim || "";
+        if (sample.domeAccent) state.domeAccent = sample.domeAccent;
+        if (sample.domeLogoScale) state.domeLogoScale = sample.domeLogoScale;
         state.lineStyles = sample.lineStyles ? clone(sample.lineStyles) : {};
       }
     }
@@ -1062,6 +1161,30 @@
         + '<label class="inline"><input type="checkbox" class="dome-row-highlight-input" data-idx="'+i+'"'+(r.highlight?' checked':'')+'> <span class="tiny">特價／強調（套用強調色）</span></label>'
         + lineToolsHTML("dome.row."+i)
         + '<button type="button" class="btn-remove dome-row-remove" data-idx="'+i+'" style="width:100%;margin-top:6px;">刪除此列</button>'
+      + '</div>';
+    }).join("");
+    syncLineTools();
+  }
+
+  /* ---------- dome 規格價目表式 table rows (11x16) ---------- */
+  function renderDomeTableRows(){
+    var box = document.getElementById("domeTableRowsList");
+    box.innerHTML = (state.domeTableRows||[]).map(function(r, i){
+      return '<div class="row-group" data-idx="'+i+'">'
+        + '<label class="field"><span class="lbl">名稱 / 型號</span><input type="text" class="dome-table-name-input" data-idx="'+i+'" value="'+esc(r.name)+'"></label>'
+        + lineToolsHTML("dome.table."+i+".name")
+        + '<label class="field"><span class="lbl">規格說明（可分行）</span><textarea class="dome-table-spec-input" data-idx="'+i+'" rows="2">'+esc(r.spec)+'</textarea></label>'
+        + lineToolsHTML("dome.table."+i+".spec")
+        + '<div class="row2">'
+          + '<label class="field"><span class="lbl">售價</span><input type="text" class="dome-table-price-input" data-idx="'+i+'" value="'+esc(r.price)+'"></label>'
+          + '<label class="inline" style="align-self:end;padding-bottom:8px;"><input type="checkbox" class="dome-table-price-red-input" data-idx="'+i+'"'+(r.priceRed?' checked':'')+'> <span class="tiny">紅字</span></label>'
+        + '</div>'
+        + '<div class="row2">'
+          + '<label class="field"><span class="lbl">特價（選用，留空則不顯示）</span><input type="text" class="dome-table-special-input" data-idx="'+i+'" value="'+esc(r.specialPrice||"")+'"></label>'
+          + '<label class="inline" style="align-self:end;padding-bottom:8px;"><input type="checkbox" class="dome-table-special-red-input" data-idx="'+i+'"'+(r.specialRed!==false?' checked':'')+'> <span class="tiny">紅字</span></label>'
+        + '</div>'
+        + lineToolsHTML("dome.table."+i+".price")
+        + '<button type="button" class="btn-remove dome-table-row-remove" data-idx="'+i+'" style="width:100%;margin-top:6px;">刪除此列</button>'
       + '</div>';
     }).join("");
     syncLineTools();
@@ -1147,16 +1270,23 @@
       document.getElementById("compareSpecialUnit").value = state.compareSpecialUnit;
       document.getElementById("compareAccent").value = state.compareAccent;
     } else if (state.template==="dome"){
+      var isDomeTable = state.domeBg === "11x16";
       document.getElementById("domeBg").value = state.domeBg || "12x9.5";
       fillBrandSelect(document.getElementById("domeBrand"), state.domeBrand);
       document.getElementById("domeLogoScale").value = state.domeLogoScale || 1;
       document.getElementById("domeLogoScaleVal").textContent = Math.round((state.domeLogoScale||1)*100)+"%";
       document.getElementById("domeLogoAlign").value = state.domeLogoAlign || "center";
       document.getElementById("domeHeadline").value = state.domeHeadline;
+      document.getElementById("domeHighlight").value = state.domeHighlight || "";
       document.getElementById("domeSub").value = state.domeSub;
+      document.getElementById("domeRowsFieldset").classList.toggle("hidden", isDomeTable);
+      document.getElementById("domeTableFieldset").classList.toggle("hidden", !isDomeTable);
       renderDomeRows();
+      renderDomeTableRows();
+      document.getElementById("domeTableCurrency").value = state.domeTableCurrency || "NT $";
       document.getElementById("domeDim").value = state.domeDim || "";
       document.getElementById("domeAccent").value = state.domeAccent;
+      document.getElementById("domeRowShade").value = state.domeRowShade || "#ece5da";
     }
     syncLineTools();
   }
@@ -1387,7 +1517,9 @@
     });
     document.getElementById("domeLogoAlign").addEventListener("change", function(){ state.domeLogoAlign=this.value; renderCard(); });
     document.getElementById("domeHeadline").addEventListener("input", function(){ state.domeHeadline=this.value; renderCard(); });
+    document.getElementById("domeHighlight").addEventListener("input", function(){ state.domeHighlight=this.value; renderCard(); });
     document.getElementById("domeSub").addEventListener("input", function(){ state.domeSub=this.value; renderCard(); });
+    document.getElementById("domeTableCurrency").addEventListener("input", function(){ state.domeTableCurrency=this.value; renderCard(); });
     document.getElementById("domeDim").addEventListener("input", function(){ state.domeDim=this.value; renderCard(); });
     document.getElementById("domeAddRow").addEventListener("click", function(){
       state.domeRows.push({label:"", value:"", unit:"元", highlight:false}); renderDomeRows(); renderCard();
@@ -1410,6 +1542,36 @@
       state.domeRows.splice(+e.target.dataset.idx,1); renderDomeRows(); renderCard();
     });
     document.getElementById("domeAccent").addEventListener("input", function(){ state.domeAccent=this.value; renderCard(); });
+    document.getElementById("domeRowShade").addEventListener("input", function(){ state.domeRowShade=this.value; renderCard(); });
+    document.getElementById("domeTableAddRow").addEventListener("click", function(){
+      if (!state.domeTableRows) state.domeTableRows = [];
+      var idx = state.domeTableRows.length;
+      state.domeTableRows.push({name:"", spec:"", price:"", priceRed:false, specialPrice:"", specialRed:true});
+      if (!state.lineStyles) state.lineStyles = {};
+      state.lineStyles["dome.table."+idx+".name"] = {fontScale:1.1, dx:0, dy:0};
+      state.lineStyles["dome.table."+idx+".spec"] = {fontScale:1.45, dx:0, dy:1.5};
+      renderDomeTableRows(); renderCard();
+    });
+    document.getElementById("domeTableRowsList").addEventListener("input", function(e){
+      var idx = e.target.dataset.idx; if (idx===undefined) return;
+      if (e.target.classList.contains("dome-table-name-input")) state.domeTableRows[+idx].name = e.target.value;
+      else if (e.target.classList.contains("dome-table-spec-input")) state.domeTableRows[+idx].spec = e.target.value;
+      else if (e.target.classList.contains("dome-table-price-input")) state.domeTableRows[+idx].price = e.target.value;
+      else if (e.target.classList.contains("dome-table-special-input")) state.domeTableRows[+idx].specialPrice = e.target.value;
+      else return;
+      renderCard();
+    });
+    document.getElementById("domeTableRowsList").addEventListener("change", function(e){
+      var idx = e.target.dataset.idx; if (idx===undefined) return;
+      if (e.target.classList.contains("dome-table-price-red-input")) state.domeTableRows[+idx].priceRed = e.target.checked;
+      else if (e.target.classList.contains("dome-table-special-red-input")) state.domeTableRows[+idx].specialRed = e.target.checked;
+      else return;
+      renderCard();
+    });
+    document.getElementById("domeTableRowsList").addEventListener("click", function(e){
+      if (!e.target.classList.contains("dome-table-row-remove")) return;
+      state.domeTableRows.splice(+e.target.dataset.idx,1); renderDomeTableRows(); renderCard();
+    });
   }
 
   function init(){
