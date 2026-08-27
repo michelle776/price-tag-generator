@@ -117,6 +117,8 @@
   .pages-col{ display:flex; flex-direction:column; align-items:center; gap:24px; }
   .a4-sheet{ width:21cm; height:29.7cm; background:#fff; box-shadow:0 8px 24px rgba(0,0,0,.14); flex:none; position:relative; }
   .a4-inner{ position:absolute; inset:1cm; display:flex; flex-wrap:wrap; align-content:flex-start; gap:0.4cm; overflow:hidden; }
+  /* full-bleed page: a single card sized to the whole A4 sheet (e.g. dome A4 版面) prints edge-to-edge, no 1cm margin */
+  .a4-inner.full-bleed{ inset:0; gap:0; }
 
   .print-hint{ font-size:12px; color:var(--ui-sub); max-width:900px; text-align:center; }
   .page-count{ font-size:11.5px; color:var(--ui-sub); text-align:center; }
@@ -265,13 +267,13 @@
           <option value="7.5x4">7.5 × 4 cm（橫式・小卡常用）</option>
           <option value="12x8">12 × 8 cm（大巨蛋音響櫃壓克力尺寸）</option>
           <option value="12x9.5">12 × 9.5 cm（大巨蛋LG家電價格牌）</option>
-          <option value="11x16">11 × 16 cm（大巨蛋規格價目表卡）</option>
+          <option value="A4">A4（21 × 29.7 cm，大巨蛋規格價目表卡）</option>
           <option value="custom">自訂尺寸</option>
         </select>
       </label>
       <div class="row2">
-        <label class="field"><span class="lbl">寬（cm）</span><input type="number" id="sizeW" step="0.1" min="2" max="29"></label>
-        <label class="field"><span class="lbl">高（cm）</span><input type="number" id="sizeH" step="0.1" min="2" max="29"></label>
+        <label class="field"><span class="lbl">寬（cm）</span><input type="number" id="sizeW" step="0.1" min="2" max="30"></label>
+        <label class="field"><span class="lbl">高（cm）</span><input type="number" id="sizeH" step="0.1" min="2" max="30"></label>
       </div>
       <div class="row2">
         <label class="field"><span class="lbl">此張列印份數</span><input type="number" id="copies" min="1" max="120" value="1"></label>
@@ -404,7 +406,7 @@
             <option value="12x9.5">12 × 9.5 cm 版面</option>
             <option value="12x8">12 × 8 cm 版面（音響櫃壓克力）</option>
             <option value="7x4">7 × 4 cm 版面</option>
-            <option value="11x16">11 × 16 cm 版面（規格價目表式）</option>
+            <option value="A4">A4 版面（規格價目表式）</option>
           </select>
         </label>
       </fieldset>
@@ -508,14 +510,14 @@
     "7.5x4": {w:7.5,h:4},
     "12x8":  {w:12, h:8},
     "12x9.5":{w:12, h:9.5},
-    "11x16": {w:11, h:16}
+    "A4": {w:21, h:29.7}
   };
 
   var DOME_BG = {
     "12x9.5": "templates/dome-bg-12X9.5.jpg",
     "12x8": "templates/dome-bg-12x8.jpg",
     "7x4":  "templates/dome-bg-7x4.jpg",
-    "11x16": "templates/dome-bg-11X16.jpg"
+    "A4": "templates/dome-bg-A4.jpg"
   };
 
   // sample content applied when the matching background variant is picked
@@ -559,7 +561,7 @@
       ],
       domeDim:""
     },
-    "11x16": {
+    "A4": {
       domeBrand:"samsung", domeBrandUpload:"",
       domeHeadline:"4K Neo QLED 量子電視 QN87D系列\n量子 Mini LED 立體景深強化/AI量子程式演算科技",
       domeHighlight:"QN87D",
@@ -670,18 +672,28 @@
 
   function clone(o){ return JSON.parse(JSON.stringify(o)); }
 
+  // 舊版「大巨蛋門市卡・11×16 規格價目表式」已直接改版為 A4；把舊存檔的 domeBg/尺寸換過來，內容原樣保留
+  function migrateLegacyDome11x16(card){
+    if (card && card.template==="dome" && card.domeBg==="11x16"){
+      card.domeBg = "A4";
+      if (card.size && card.size.w===11 && card.size.h===16){ card.size = {w:21, h:29.7}; }
+    }
+    return card;
+  }
+
   function loadDeck(){
     try{
       var raw = localStorage.getItem(STORAGE_KEY);
       if (raw){
         var parsed = JSON.parse(raw);
         if (parsed && Array.isArray(parsed.cards) && parsed.cards.length){
+          parsed.cards.forEach(migrateLegacyDome11x16);
           return {cards:parsed.cards, activeIndex: Math.min(Math.max(0,parsed.activeIndex||0), parsed.cards.length-1),
             gap: (typeof parsed.gap === "number" ? parsed.gap : 0.4)};
         }
         // migrate old single-card save format
         if (parsed && parsed.template && DEFAULTS[parsed.template]){
-          return {cards:[parsed], activeIndex:0, gap:0.4};
+          return {cards:[migrateLegacyDome11x16(parsed)], activeIndex:0, gap:0.4};
         }
       }
     }catch(e){}
@@ -880,7 +892,7 @@
     var subHTML = (s.domeSub||"").trim() ? '<p class="dome-sub" style="'+lineStyleAttr(s,"dome.sub")+'">'+fmt(s.domeSub)+'</p>' : "";
     var dimHTML = (s.domeDim||"").trim() ? '<p class="dome-dim" style="'+lineStyleAttr(s,"dome.dim")+'">'+fmt(s.domeDim)+'</p>' : "";
     var bgFile = DOME_BG[s.domeBg] || DOME_BG["12x9.5"];
-    var isTable = s.domeBg === "11x16";
+    var isTable = s.domeBg === "A4";
     var stacked = s.domeBg !== "7x4";
     var bottomPad = s.domeBg === "7x4" ? "15cqw" : "14cqw";
     var cardStyle = "background-image:url('"+bgFile+"');--accent:"+esc(s.domeAccent)+";--rowshade:"+esc(s.domeRowShade||"#ece5da")+";--lhmul:"+(s.lineHeightScale||1)+";--fontscale:"+(s.fontScale||1)+";--dome-bottompad:"+bottomPad;
@@ -974,15 +986,23 @@
     return pages;
   }
 
+  // a card sized to the full A4 sheet (e.g. dome A4 版面) should bleed edge-to-edge, not sit inside the usual 1cm print margin
+  function isFullBleedCard(c){
+    return c.size.w===21 && c.size.h===29.7;
+  }
+
   function renderPages(){
     var pages = buildPages();
     var html = pages.map(function(pageItems){
+      var fullBleed = pageItems.length===1 && isFullBleedCard(pageItems[0].card);
       var inner = pageItems.map(function(it){
         var c = it.card;
         var cls = "card" + (c.template==="dome" ? " card-dome" : "") + (c.cutGuides ? " cut-guide" : "") + (it.cardIndex===activeIndex ? " card-active" : "");
         return '<div class="'+cls+'" data-card-idx="'+it.cardIndex+'" style="width:'+c.size.w+'cm;height:'+c.size.h+'cm;">'+buildCardInner(c)+'</div>';
       }).join("");
-      return '<div class="a4-sheet"><div class="a4-inner" style="gap:'+pageGap+'cm">'+inner+'</div></div>';
+      var innerCls = "a4-inner" + (fullBleed ? " full-bleed" : "");
+      var innerStyle = fullBleed ? "" : ' style="gap:'+pageGap+'cm"';
+      return '<div class="a4-sheet"><div class="'+innerCls+'"'+innerStyle+'>'+inner+'</div></div>';
     }).join("");
     document.getElementById("previewPages").innerHTML = html;
 
@@ -1121,7 +1141,7 @@
   // variant's sample text/rows/line-sizes (used when the user explicitly picks a variant)
   function applyDomeBgVariant(key, resetContent){
     state.domeBg = key;
-    state.domeLogoAlign = (key === "7x4" || key === "11x16") ? "left" : "center";
+    state.domeLogoAlign = (key === "7x4" || key === "A4") ? "left" : "center";
     if (resetContent){
       var sample = DOME_SAMPLES[key];
       if (sample){
@@ -1168,7 +1188,7 @@
     syncLineTools();
   }
 
-  /* ---------- dome 規格價目表式 table rows (11x16) ---------- */
+  /* ---------- dome 規格價目表式 table rows (A4) ---------- */
   function renderDomeTableRows(){
     var box = document.getElementById("domeTableRowsList");
     box.innerHTML = (state.domeTableRows||[]).map(function(r, i){
@@ -1272,7 +1292,7 @@
       document.getElementById("compareSpecialUnit").value = state.compareSpecialUnit;
       document.getElementById("compareAccent").value = state.compareAccent;
     } else if (state.template==="dome"){
-      var isDomeTable = state.domeBg === "11x16";
+      var isDomeTable = state.domeBg === "A4";
       document.getElementById("domeBg").value = state.domeBg || "12x9.5";
       fillBrandSelect(document.getElementById("domeBrand"), state.domeBrand);
       document.getElementById("domeLogoScale").value = state.domeLogoScale || 1;
