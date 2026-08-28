@@ -261,7 +261,7 @@
 
     <fieldset>
       <legend>此張卡片尺寸與列印份數</legend>
-      <label class="field">
+      <label class="field" id="sizePresetRow">
         <span class="lbl">尺寸預設</span>
         <select id="sizePreset">
           <option value="15x10">15 × 10 cm（橫式・組合卡常用）</option>
@@ -667,7 +667,7 @@
     },
     dome: {
       template:"dome",
-      size:{w:12,h:9.5}, copies:1, cutGuides:false,
+      size:{w:12,h:9.5}, copies:1, cutGuides:true,
       domeBg:"12x9.5",
       domeBrand:"lg-color", domeBrandUpload:"", domeLogoScale:1, domeLogoAlign:"center", lineHeightScale:1, fontScale:1,
       domeHeadline:"23公斤直立式洗衣機 EZ 系列\n夜墨灰｜AI DD™ 蒸氣直驅變頻",
@@ -1299,6 +1299,8 @@
     document.getElementById("formDome").classList.toggle("hidden", state.template!=="dome");
 
     fillSizePresetOptions();
+    // 大巨蛋門市卡：尺寸由「背景底圖」決定，隱藏「尺寸預設」下拉避免門市選錯（寬高仍可手動微調）
+    document.getElementById("sizePresetRow").classList.toggle("hidden", state.template === "dome");
     document.getElementById("sizeW").value = state.size.w;
     document.getElementById("sizeH").value = state.size.h;
     var presetMatch = Object.keys(SIZE_PRESETS).filter(function(k){
