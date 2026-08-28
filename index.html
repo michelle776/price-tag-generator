@@ -439,7 +439,7 @@
       </fieldset>
       <fieldset id="domeTableFieldset">
         <legend>規格 / 價格列（規格價目表式）</legend>
-        <label class="field"><span class="lbl">價格前綴</span><input type="text" id="domeTableCurrency"></label>
+        <label class="field"><span class="lbl">價格前綴（選用，預設留空、以每行「單位」當後綴如「元」）</span><input type="text" id="domeTableCurrency" placeholder="例：NT $"></label>
         <div class="listbox" id="domeTableRowsList"></div>
         <button type="button" class="btn-add" id="domeTableAddRow">+ 新增一列</button>
       </fieldset>
@@ -594,12 +594,12 @@
       domeSub:"",
       domeRows:[],
       domeTableRows:[
-        {name:"55吋 QA55QN87DAXXZW", spec:"含底座 W 122.8 H 76.9 D 24.4(CM)\n不含底座 W 122.8 H 70.6 D2.69(CM)", prices:[{label:"售價", value:"54,900", unit:"", highlight:false}]},
-        {name:"65吋 QA65QN87DAXXZW", spec:"含底座 W 144.7 H 89 D 27.5(CM)\n不含底座 W 144.7 H 82.9 D 2.69(CM)", prices:[{label:"售價", value:"67,900", unit:"", highlight:false}]},
-        {name:"75吋 QA75QN87DAXXZW", spec:"含底座 W 167 H 101.6 D 27.5(CM)\n不含底座 W 167 H 95.8 D2.77(CM)", prices:[{label:"售價", value:"94,900", unit:"", highlight:false}]},
-        {name:"85吋 QA85QN87DAXXZW", spec:"含底座 W 189.3 H 114 D 31.1(CM)\n不含底座 W 189.3 H 108.2 D2.79(CM)", prices:[{label:"售價", value:"209,900", unit:"", highlight:false}]}
+        {name:"55吋 QA55QN87DAXXZW", spec:"含底座 W 122.8 H 76.9 D 24.4(CM)\n不含底座 W 122.8 H 70.6 D2.69(CM)", prices:[{label:"售價", value:"54,900", unit:"元", highlight:false}]},
+        {name:"65吋 QA65QN87DAXXZW", spec:"含底座 W 144.7 H 89 D 27.5(CM)\n不含底座 W 144.7 H 82.9 D 2.69(CM)", prices:[{label:"售價", value:"67,900", unit:"元", highlight:false}]},
+        {name:"75吋 QA75QN87DAXXZW", spec:"含底座 W 167 H 101.6 D 27.5(CM)\n不含底座 W 167 H 95.8 D2.77(CM)", prices:[{label:"售價", value:"94,900", unit:"元", highlight:false}]},
+        {name:"85吋 QA85QN87DAXXZW", spec:"含底座 W 189.3 H 114 D 31.1(CM)\n不含底座 W 189.3 H 108.2 D2.79(CM)", prices:[{label:"售價", value:"209,900", unit:"元", highlight:false}]}
       ],
-      domeTableCurrency:"NT $",
+      domeTableCurrency:"",
       domeRowShade:"#ece5da",
       domeAccent:"#FF0000",
       domeLogoScale:1,
@@ -677,7 +677,7 @@
         {label:"售價", value:"32,900", unit:"元", highlight:false},
         {label:"特價", value:"29,900", unit:"元", highlight:true}
       ],
-      domeTableRows:[], domeTableCurrency:"NT $", domeRowShade:"#ece5da",
+      domeTableRows:[], domeTableCurrency:"", domeRowShade:"#ece5da",
       domeDim:"產品尺寸 (WxHxD mm) 686x1092x721",
       domeAccent:"#d3311f",
       lineStyles:{
@@ -1206,7 +1206,7 @@
         state.domeSub = sample.domeSub;
         state.domeRows = sample.domeRows ? clone(sample.domeRows) : [];
         state.domeTableRows = sample.domeTableRows ? clone(sample.domeTableRows) : [];
-        state.domeTableCurrency = sample.domeTableCurrency || "NT $";
+        state.domeTableCurrency = (sample.domeTableCurrency != null ? sample.domeTableCurrency : "");
         state.domeRowShade = sample.domeRowShade || "#ece5da";
         state.domeDim = sample.domeDim || "";
         if (sample.domeAccent) state.domeAccent = sample.domeAccent;
@@ -1366,7 +1366,7 @@
       document.getElementById("domeTableFieldset").classList.toggle("hidden", !isDomeTable);
       renderDomeRows();
       renderDomeTableRows();
-      document.getElementById("domeTableCurrency").value = state.domeTableCurrency || "NT $";
+      document.getElementById("domeTableCurrency").value = (state.domeTableCurrency != null ? state.domeTableCurrency : "");
       document.getElementById("domeDim").value = state.domeDim || "";
       document.getElementById("domeAccent").value = state.domeAccent;
       document.getElementById("domeRowShade").value = state.domeRowShade || "#ece5da";
@@ -1629,7 +1629,7 @@
     document.getElementById("domeTableAddRow").addEventListener("click", function(){
       if (!state.domeTableRows) state.domeTableRows = [];
       var idx = state.domeTableRows.length;
-      state.domeTableRows.push({name:"", spec:"", prices:[{label:"售價", value:"", unit:"", highlight:false}]});
+      state.domeTableRows.push({name:"", spec:"", prices:[{label:"售價", value:"", unit:"元", highlight:false}]});
       if (!state.lineStyles) state.lineStyles = {};
       state.lineStyles["dome.table."+idx+".name"] = {fontScale:1.1, dx:0, dy:0};
       state.lineStyles["dome.table."+idx+".spec"] = {fontScale:1.45, dx:0, dy:1.5};
@@ -1663,7 +1663,7 @@
       var addBtn = e.target.closest(".dome-tp-add");
       if (addBtn){
         var row = state.domeTableRows[+addBtn.dataset.idx]; if (!row) return;
-        ensureRowPrices(row).push({label:"特價", value:"", unit:"", highlight:true});
+        ensureRowPrices(row).push({label:"特價", value:"", unit:"元", highlight:true});
         renderDomeTableRows(); renderCard(); return;
       }
       var rmBtn = e.target.closest(".dome-tp-remove");
@@ -1671,7 +1671,7 @@
         var row2 = state.domeTableRows[+rmBtn.dataset.idx]; if (!row2) return;
         var arr = ensureRowPrices(row2);
         if (arr.length > 1) arr.splice(+rmBtn.dataset.pidx, 1);
-        else arr[0] = {label:"", value:"", unit:"", highlight:false};
+        else arr[0] = {label:"", value:"", unit:"元", highlight:false};
         renderDomeTableRows(); renderCard(); return;
       }
       if (e.target.classList.contains("dome-table-row-remove")){
