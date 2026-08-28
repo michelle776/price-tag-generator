@@ -69,6 +69,8 @@
   .row-group{ border:1px solid #e6e1d8; border-radius:7px; padding:8px; background:#fbfaf8; }
   .row-group + .row-group{ margin-top:6px; }
   .row-group .lbl{ font-size:10.5px; }
+  .row-group .dtp-group{ background:#f2ede3; border-color:#ddd6c9; }
+  .row-group .dtp-group + .dtp-group{ margin-top:5px; }
 
   /* per-line fine-tune tools (font size + up/down/left/right nudge) */
   .linetools{ display:flex; align-items:center; gap:3px; margin:4px 0 10px; flex-wrap:wrap; }
@@ -208,10 +210,11 @@
   /* let the alternating row shade bleed edge-to-edge past dome-content's side padding, while keeping the text inset the same as before */
   .dome-table-rows{ margin:0 -7cqw; width:calc(100% + 14cqw); }
   .dome-table-rows .specs-row{ padding-left:calc(1.8cqw + 7cqw); padding-right:calc(1.8cqw + 7cqw); }
-  /* dome table row price: single amount, or optional 售價/特價 pair (each selectable as red/accent) */
+  /* dome table row price: a free list of price lines (售價／特價／會員價…), each line individually
+     labelled, coloured (紅字＝強調色＋放大), fine-tuned and removable — mirrors the 12×9.5 price rows */
   .specs-row-price.dome-table-price{ display:flex; flex-direction:column; align-items:flex-end; gap:0.4cqw; }
-  .dome-table-price .dtp-orig{ font-size:calc(2.6cqw * var(--fontscale,1) * var(--ls,1)); font-weight:600; color:#4a4642; }
-  .dome-table-price .dtp-special{ font-size:calc(4cqw * var(--fontscale,1) * var(--ls,1)); font-weight:800; }
+  .dome-table-price .dtp-line{ display:inline-block; font-size:calc(3.2cqw * var(--fontscale,1) * var(--ls,1)); font-weight:700; color:#3a3632; line-height:1.2; white-space:nowrap; }
+  .dome-table-price .dtp-line.red-price{ font-size:calc(4.2cqw * var(--fontscale,1) * var(--ls,1)); font-weight:800; }
   .specs-row-price .red-price, .specs-row-price.red-price{ color:var(--accent,#c0392b); }
 
   /* ---------- print (prints exactly what the A4 preview shows) ---------- */
@@ -513,6 +516,29 @@
     "A4": {w:21, h:29.7}
   };
 
+  // 「尺寸預設」下拉的選項；大巨蛋門市卡只顯示有對應底圖版型的那幾個尺寸
+  var SIZE_PRESET_OPTIONS = [
+    {v:"15x10",  label:"15 × 10 cm（橫式・組合卡常用）"},
+    {v:"11x15",  label:"11 × 15 cm（直式・規格表常用）"},
+    {v:"7x4",    label:"7 × 4 cm（大巨蛋耳機價格牌）"},
+    {v:"7.5x4",  label:"7.5 × 4 cm（橫式・小卡常用）"},
+    {v:"12x8",   label:"12 × 8 cm（大巨蛋音響櫃壓克力尺寸）"},
+    {v:"12x9.5", label:"12 × 9.5 cm（大巨蛋LG家電價格牌）"},
+    {v:"A4",     label:"A4（21 × 29.7 cm，大巨蛋規格價目表卡）"},
+    {v:"custom", label:"自訂尺寸"}
+  ];
+  var DOME_SIZE_PRESET_VALUES = ["12x9.5", "12x8", "7x4", "A4"];
+
+  function fillSizePresetOptions(){
+    var isDome = state && state.template === "dome";
+    var list = isDome
+      ? SIZE_PRESET_OPTIONS.filter(function(o){ return DOME_SIZE_PRESET_VALUES.indexOf(o.v) >= 0; })
+      : SIZE_PRESET_OPTIONS;
+    document.getElementById("sizePreset").innerHTML = list.map(function(o){
+      return '<option value="'+esc(o.v)+'">'+esc(o.label)+'</option>';
+    }).join("");
+  }
+
   var DOME_BG = {
     "12x9.5": "templates/dome-bg-12X9.5.jpg",
     "12x8": "templates/dome-bg-12x8.jpg",
@@ -568,10 +594,10 @@
       domeSub:"",
       domeRows:[],
       domeTableRows:[
-        {name:"55吋 QA55QN87DAXXZW", spec:"含底座 W 122.8 H 76.9 D 24.4(CM)\n不含底座 W 122.8 H 70.6 D2.69(CM)", price:"54,900", priceRed:false, specialPrice:"", specialRed:true},
-        {name:"65吋 QA65QN87DAXXZW", spec:"含底座 W 144.7 H 89 D 27.5(CM)\n不含底座 W 144.7 H 82.9 D 2.69(CM)", price:"67,900", priceRed:false, specialPrice:"", specialRed:true},
-        {name:"75吋 QA75QN87DAXXZW", spec:"含底座 W 167 H 101.6 D 27.5(CM)\n不含底座 W 167 H 95.8 D2.77(CM)", price:"94,900", priceRed:false, specialPrice:"", specialRed:true},
-        {name:"85吋 QA85QN87DAXXZW", spec:"含底座 W 189.3 H 114 D 31.1(CM)\n不含底座 W 189.3 H 108.2 D2.79(CM)", price:"209,900", priceRed:false, specialPrice:"", specialRed:true}
+        {name:"55吋 QA55QN87DAXXZW", spec:"含底座 W 122.8 H 76.9 D 24.4(CM)\n不含底座 W 122.8 H 70.6 D2.69(CM)", prices:[{label:"售價", value:"54,900", unit:"", highlight:false}]},
+        {name:"65吋 QA65QN87DAXXZW", spec:"含底座 W 144.7 H 89 D 27.5(CM)\n不含底座 W 144.7 H 82.9 D 2.69(CM)", prices:[{label:"售價", value:"67,900", unit:"", highlight:false}]},
+        {name:"75吋 QA75QN87DAXXZW", spec:"含底座 W 167 H 101.6 D 27.5(CM)\n不含底座 W 167 H 95.8 D2.77(CM)", prices:[{label:"售價", value:"94,900", unit:"", highlight:false}]},
+        {name:"85吋 QA85QN87DAXXZW", spec:"含底座 W 189.3 H 114 D 31.1(CM)\n不含底座 W 189.3 H 108.2 D2.79(CM)", prices:[{label:"售價", value:"209,900", unit:"", highlight:false}]}
       ],
       domeTableCurrency:"NT $",
       domeRowShade:"#ece5da",
@@ -681,6 +707,32 @@
     return card;
   }
 
+  // A4 規格價目表式的每列價格：舊版是固定的 price/specialPrice 兩欄，新版改成可自由增減的「價格行」清單。
+  // 把舊資料轉成 prices 陣列（並把舊的單行微調 key 轉到第 0 行）。
+  function ensureRowPrices(r){
+    if (Array.isArray(r.prices)) return r.prices;
+    var arr = [{label:"售價", value:(r.price!=null?r.price:""), unit:"", highlight:!!r.priceRed}];
+    var sp = (r.specialPrice!=null?String(r.specialPrice):"").trim();
+    if (sp !== "") arr.push({label:"特價", value:r.specialPrice, unit:"", highlight:(r.specialRed!==false)});
+    r.prices = arr;
+    delete r.price; delete r.priceRed; delete r.specialPrice; delete r.specialRed;
+    return r.prices;
+  }
+  function migrateDomeTableRows(card){
+    if (card && card.template==="dome" && Array.isArray(card.domeTableRows)){
+      card.domeTableRows.forEach(function(r, i){
+        if (!Array.isArray(r.prices)){
+          ensureRowPrices(r);
+          if (card.lineStyles && card.lineStyles["dome.table."+i+".price"]){
+            card.lineStyles["dome.table."+i+".price.0"] = card.lineStyles["dome.table."+i+".price"];
+            delete card.lineStyles["dome.table."+i+".price"];
+          }
+        }
+      });
+    }
+    return card;
+  }
+
   function loadDeck(){
     try{
       var raw = localStorage.getItem(STORAGE_KEY);
@@ -688,12 +740,13 @@
         var parsed = JSON.parse(raw);
         if (parsed && Array.isArray(parsed.cards) && parsed.cards.length){
           parsed.cards.forEach(migrateLegacyDome11x16);
+          parsed.cards.forEach(migrateDomeTableRows);
           return {cards:parsed.cards, activeIndex: Math.min(Math.max(0,parsed.activeIndex||0), parsed.cards.length-1),
             gap: (typeof parsed.gap === "number" ? parsed.gap : 0.4)};
         }
         // migrate old single-card save format
         if (parsed && parsed.template && DEFAULTS[parsed.template]){
-          return {cards:[migrateLegacyDome11x16(parsed)], activeIndex:0, gap:0.4};
+          return {cards:[migrateDomeTableRows(migrateLegacyDome11x16(parsed))], activeIndex:0, gap:0.4};
         }
       }
     }catch(e){}
@@ -903,22 +956,23 @@
       var tableRowsHTML = (s.domeTableRows||[]).map(function(r, i){
         var specHtml = fmt(r.spec||"").replace(/\n/g,"<br>");
         var currency = esc(s.domeTableCurrency||"");
-        var specialTrim = (r.specialPrice||"").toString().trim();
-        var priceHTML;
-        if (specialTrim !== ""){
-          priceHTML = '<div class="specs-row-price dome-table-price" style="'+lineStyleAttr(s,"dome.table."+i+".price")+'">'
-            + '<span class="dtp-orig'+(r.priceRed?' red-price':'')+'">售價 '+currency+money(r.price)+'</span>'
-            + '<span class="dtp-special'+(r.specialRed!==false?' red-price':'')+'">特價 '+currency+money(r.specialPrice)+'</span>'
-          + '</div>';
-        } else {
-          priceHTML = '<div class="specs-row-price'+(r.priceRed?' red-price':'')+'" style="'+lineStyleAttr(s,"dome.table."+i+".price")+'">'+currency+money(r.price)+'</div>';
-        }
+        var pricesHTML = ensureRowPrices(r).map(function(p, pi){
+          var val = (p.value!=null?String(p.value):"").trim();
+          var lbl = (p.label!=null?String(p.label):"").trim();
+          if (val==="" && lbl==="") return "";
+          var unit = (p.unit!=null?String(p.unit):"").trim();
+          return '<span class="dtp-line'+(p.highlight?' red-price':'')+'" style="'+lineStyleAttr(s,"dome.table."+i+".price."+pi)+'">'
+            + (lbl?fmt(p.label)+' ':'')
+            + currency + money(p.value)
+            + (unit?' '+fmt(p.unit):'')
+          + '</span>';
+        }).join("");
         return '<div class="specs-row '+(i%2===1?'alt':'')+'">'
           + '<div class="specs-row-text">'
             + '<div class="specs-row-name" style="'+lineStyleAttr(s,"dome.table."+i+".name")+'">'+fmt(r.name)+'</div>'
             + '<div class="specs-row-spec" style="'+lineStyleAttr(s,"dome.table."+i+".spec")+'">'+specHtml+'</div>'
           + '</div>'
-          + priceHTML
+          + '<div class="specs-row-price dome-table-price">'+pricesHTML+'</div>'
         + '</div>';
       }).join("");
       bodyHTML = '<h1 class="dome-headline" style="'+lineStyleAttr(s,"dome.headline")+'">'+headlineHTML+'</h1>'
@@ -1192,21 +1246,27 @@
   function renderDomeTableRows(){
     var box = document.getElementById("domeTableRowsList");
     box.innerHTML = (state.domeTableRows||[]).map(function(r, i){
+      var pricesHTML = ensureRowPrices(r).map(function(p, pi){
+        return '<div class="row-group dtp-group" data-idx="'+i+'" data-pidx="'+pi+'">'
+          + '<label class="field"><span class="lbl">標籤（售價／特價／會員價…）</span><input type="text" class="dome-tp-label-input" data-idx="'+i+'" data-pidx="'+pi+'" value="'+esc(p.label||"")+'"></label>'
+          + '<div class="row2">'
+            + '<label class="field"><span class="lbl">金額</span><input type="text" class="dome-tp-value-input" data-idx="'+i+'" data-pidx="'+pi+'" value="'+esc(p.value||"")+'"></label>'
+            + '<label class="field"><span class="lbl">單位（選用）</span><input type="text" class="dome-tp-unit-input" data-idx="'+i+'" data-pidx="'+pi+'" value="'+esc(p.unit||"")+'"></label>'
+          + '</div>'
+          + '<label class="inline"><input type="checkbox" class="dome-tp-highlight-input" data-idx="'+i+'" data-pidx="'+pi+'"'+(p.highlight?' checked':'')+'> <span class="tiny">特價／強調（套用強調色，字放大）</span></label>'
+          + lineToolsHTML("dome.table."+i+".price."+pi)
+          + '<button type="button" class="btn-remove dome-tp-remove" data-idx="'+i+'" data-pidx="'+pi+'" style="width:100%;margin-top:4px;">刪除此價格行</button>'
+        + '</div>';
+      }).join("");
       return '<div class="row-group" data-idx="'+i+'">'
         + '<label class="field"><span class="lbl">名稱 / 型號</span><input type="text" class="dome-table-name-input" data-idx="'+i+'" value="'+esc(r.name)+'"></label>'
         + lineToolsHTML("dome.table."+i+".name")
         + '<label class="field"><span class="lbl">規格說明（可分行）</span><textarea class="dome-table-spec-input" data-idx="'+i+'" rows="2">'+esc(r.spec)+'</textarea></label>'
         + lineToolsHTML("dome.table."+i+".spec")
-        + '<div class="row2">'
-          + '<label class="field"><span class="lbl">售價</span><input type="text" class="dome-table-price-input" data-idx="'+i+'" value="'+esc(r.price)+'"></label>'
-          + '<label class="inline" style="align-self:end;padding-bottom:8px;"><input type="checkbox" class="dome-table-price-red-input" data-idx="'+i+'"'+(r.priceRed?' checked':'')+'> <span class="tiny">紅字</span></label>'
-        + '</div>'
-        + '<div class="row2">'
-          + '<label class="field"><span class="lbl">特價（選用，留空則不顯示）</span><input type="text" class="dome-table-special-input" data-idx="'+i+'" value="'+esc(r.specialPrice||"")+'"></label>'
-          + '<label class="inline" style="align-self:end;padding-bottom:8px;"><input type="checkbox" class="dome-table-special-red-input" data-idx="'+i+'"'+(r.specialRed!==false?' checked':'')+'> <span class="tiny">紅字</span></label>'
-        + '</div>'
-        + lineToolsHTML("dome.table."+i+".price")
-        + '<button type="button" class="btn-remove dome-table-row-remove" data-idx="'+i+'" style="width:100%;margin-top:6px;">刪除此列</button>'
+        + '<div class="lbl" style="margin:2px 0 4px;">價格行（可分開控制、可刪除）</div>'
+        + pricesHTML
+        + '<button type="button" class="btn-add dome-tp-add" data-idx="'+i+'" style="margin-top:4px;">+ 新增價格行</button>'
+        + '<button type="button" class="btn-remove dome-table-row-remove" data-idx="'+i+'" style="width:100%;margin-top:8px;">刪除此列</button>'
       + '</div>';
     }).join("");
     syncLineTools();
@@ -1238,6 +1298,7 @@
     document.getElementById("formCompare").classList.toggle("hidden", state.template!=="compare");
     document.getElementById("formDome").classList.toggle("hidden", state.template!=="dome");
 
+    fillSizePresetOptions();
     document.getElementById("sizeW").value = state.size.w;
     document.getElementById("sizeH").value = state.size.h;
     var presetMatch = Object.keys(SIZE_PRESETS).filter(function(k){
@@ -1568,7 +1629,7 @@
     document.getElementById("domeTableAddRow").addEventListener("click", function(){
       if (!state.domeTableRows) state.domeTableRows = [];
       var idx = state.domeTableRows.length;
-      state.domeTableRows.push({name:"", spec:"", price:"", priceRed:false, specialPrice:"", specialRed:true});
+      state.domeTableRows.push({name:"", spec:"", prices:[{label:"售價", value:"", unit:"", highlight:false}]});
       if (!state.lineStyles) state.lineStyles = {};
       state.lineStyles["dome.table."+idx+".name"] = {fontScale:1.1, dx:0, dy:0};
       state.lineStyles["dome.table."+idx+".spec"] = {fontScale:1.45, dx:0, dy:1.5};
@@ -1576,23 +1637,46 @@
     });
     document.getElementById("domeTableRowsList").addEventListener("input", function(e){
       var idx = e.target.dataset.idx; if (idx===undefined) return;
-      if (e.target.classList.contains("dome-table-name-input")) state.domeTableRows[+idx].name = e.target.value;
-      else if (e.target.classList.contains("dome-table-spec-input")) state.domeTableRows[+idx].spec = e.target.value;
-      else if (e.target.classList.contains("dome-table-price-input")) state.domeTableRows[+idx].price = e.target.value;
-      else if (e.target.classList.contains("dome-table-special-input")) state.domeTableRows[+idx].specialPrice = e.target.value;
+      var row = state.domeTableRows[+idx]; if (!row) return;
+      var pidx = e.target.dataset.pidx;
+      if (e.target.classList.contains("dome-table-name-input")) row.name = e.target.value;
+      else if (e.target.classList.contains("dome-table-spec-input")) row.spec = e.target.value;
+      else if (pidx!==undefined){
+        var p = ensureRowPrices(row)[+pidx]; if (!p) return;
+        if (e.target.classList.contains("dome-tp-label-input")) p.label = e.target.value;
+        else if (e.target.classList.contains("dome-tp-value-input")) p.value = e.target.value;
+        else if (e.target.classList.contains("dome-tp-unit-input")) p.unit = e.target.value;
+        else return;
+      }
       else return;
       renderCard();
     });
     document.getElementById("domeTableRowsList").addEventListener("change", function(e){
-      var idx = e.target.dataset.idx; if (idx===undefined) return;
-      if (e.target.classList.contains("dome-table-price-red-input")) state.domeTableRows[+idx].priceRed = e.target.checked;
-      else if (e.target.classList.contains("dome-table-special-red-input")) state.domeTableRows[+idx].specialRed = e.target.checked;
-      else return;
-      renderCard();
+      var idx = e.target.dataset.idx, pidx = e.target.dataset.pidx;
+      if (idx===undefined || pidx===undefined) return;
+      if (!e.target.classList.contains("dome-tp-highlight-input")) return;
+      var row = state.domeTableRows[+idx]; if (!row) return;
+      var p = ensureRowPrices(row)[+pidx]; if (!p) return;
+      p.highlight = e.target.checked; renderCard();
     });
     document.getElementById("domeTableRowsList").addEventListener("click", function(e){
-      if (!e.target.classList.contains("dome-table-row-remove")) return;
-      state.domeTableRows.splice(+e.target.dataset.idx,1); renderDomeTableRows(); renderCard();
+      var addBtn = e.target.closest(".dome-tp-add");
+      if (addBtn){
+        var row = state.domeTableRows[+addBtn.dataset.idx]; if (!row) return;
+        ensureRowPrices(row).push({label:"特價", value:"", unit:"", highlight:true});
+        renderDomeTableRows(); renderCard(); return;
+      }
+      var rmBtn = e.target.closest(".dome-tp-remove");
+      if (rmBtn){
+        var row2 = state.domeTableRows[+rmBtn.dataset.idx]; if (!row2) return;
+        var arr = ensureRowPrices(row2);
+        if (arr.length > 1) arr.splice(+rmBtn.dataset.pidx, 1);
+        else arr[0] = {label:"", value:"", unit:"", highlight:false};
+        renderDomeTableRows(); renderCard(); return;
+      }
+      if (e.target.classList.contains("dome-table-row-remove")){
+        state.domeTableRows.splice(+e.target.dataset.idx,1); renderDomeTableRows(); renderCard();
+      }
     });
   }
 
