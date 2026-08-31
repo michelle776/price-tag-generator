@@ -54,8 +54,8 @@
   .inline{ display:flex; gap:8px; align-items:center; }
   .tiny{ font-size:11px; color:var(--ui-sub); }
 
-  .tabbar{ display:flex; gap:6px; margin-bottom:16px; }
-  .tabbar button{ flex:1; padding:9px 4px; font-size:12.5px; font-weight:700; border-radius:7px;
+  .tabbar{ display:flex; flex-wrap:wrap; gap:6px; margin-bottom:16px; }
+  .tabbar button{ flex:1 1 28%; min-width:88px; padding:9px 4px; font-size:12.5px; font-weight:700; border-radius:7px;
     border:1px solid #d8d2c8; background:#fff; color:var(--ui-sub); cursor:pointer; }
   .tabbar button.active{ background:var(--ui-accent); border-color:var(--ui-accent); color:#fff; }
 
@@ -118,9 +118,14 @@
     min-height:320px; max-height:78vh; overflow:auto; width:100%; max-width:960px; }
   .pages-col{ display:flex; flex-direction:column; align-items:center; gap:24px; }
   .a4-sheet{ width:21cm; height:29.7cm; background:#fff; box-shadow:0 8px 24px rgba(0,0,0,.14); flex:none; position:relative; }
-  .a4-inner{ position:absolute; inset:1cm; display:flex; flex-wrap:wrap; align-content:flex-start; gap:0.4cm; overflow:hidden; }
+  /* overflow:visible so a cut-guide card sitting flush against the top/left margin still shows its dashed guide */
+  .a4-inner{ position:absolute; inset:1cm; display:flex; flex-wrap:wrap; align-content:flex-start; gap:0.2cm; overflow:visible; }
   /* full-bleed page: a single card sized to the whole A4 sheet (e.g. dome A4 版面) prints edge-to-edge, no 1cm margin */
   .a4-inner.full-bleed{ inset:0; gap:0; }
+  /* 無邊界拼版（例如台茂 10.5×14.85 一頁 4 張）：卡片彼此貼齊，裁切線落在邊緣本身 */
+  .a4-inner.a4-tile{ flex-wrap:wrap; align-content:flex-start; }
+  .a4-inner.a4-tile .card{ box-shadow:none !important; }
+  .a4-inner.a4-tile .card.cut-guide{ outline-offset:0; }
 
   .print-hint{ font-size:12px; color:var(--ui-sub); max-width:900px; text-align:center; }
   .page-count{ font-size:11.5px; color:var(--ui-sub); text-align:center; }
@@ -169,6 +174,9 @@
   .specs-row-spec{ font-size:calc(2cqw * var(--fontscale,1) * var(--ls,1)); color:#4a4642; line-height:calc(1.35 * var(--lhmul,1)); }
   .specs-row-price{ font-size:calc(4.4cqw * var(--fontscale,1) * var(--ls,1)); font-weight:800; font-variant-numeric:tabular-nums; white-space:nowrap; line-height:1; }
   .specs-rule, .specs-rows{ align-self:stretch; width:100%; } /* keep full-width table even inside a centered/left flex parent (dome reuses these classes) */
+  /* 規格價目表：隔行色塊延伸到版面（卡片邊框內緣）切齊，列內文字位置不變 */
+  .cardface.specs .specs-rows{ margin-left:-4.6cqw; margin-right:-4.6cqw; width:calc(100% + 9.2cqw); }
+  .cardface.specs .specs-row{ padding-left:calc(1.8cqw + 4.6cqw); padding-right:calc(1.8cqw + 4.6cqw); }
 
   /* compare template */
   .cardface.compare{ align-items:center; justify-content:center; text-align:center; gap:0.9cqw; padding:4.6cqw; }
@@ -217,6 +225,39 @@
   .dome-table-price .dtp-line.red-price{ font-size:calc(4.2cqw * var(--fontscale,1) * var(--ls,1)); font-weight:800; }
   .specs-row-price .red-price, .specs-row-price.red-price{ color:var(--accent,#c0392b); }
 
+  /* 台茂特賣會卡（A4 滿版）：深藍外框 + 米色內板，單一商品 logo／品名／型號／介紹／原價／新品特價／限量 */
+  .cardface.taimall{ padding:0; background:#1c2545; display:flex; flex-direction:column; color:#2b2b2b; }
+  .taimall-top{ flex:none; padding:4.4cqw 0 3.4cqw; display:flex; justify-content:center; }
+  .taimall-logo-im{ height:6.8cqw; width:auto; object-fit:contain; filter:brightness(0) invert(1); }
+  .taimall-panel{ position:relative; flex:1; min-height:0; margin:0 4.4cqw 4.4cqw; background:#ece4d7;
+    padding:6.2cqw 6cqw 9.2cqw; display:flex; flex-direction:column; }
+  .taimall-brand{ height:calc(10cqw * var(--logoscale,1)); max-width:calc(46cqw * var(--logoscale,1));
+    width:auto; object-fit:contain; align-self:flex-start; margin-top:3.4cqw; margin-bottom:5cqw; }
+  .taimall-name{ font-size:calc(3.9cqw * var(--fontscale,1) * var(--ls,1)); font-weight:800;
+    line-height:calc(1.4 * var(--lhmul,1)); margin:3.2cqw 0 0; text-wrap:balance; }
+  .taimall-model{ font-size:calc(3.3cqw * var(--fontscale,1) * var(--ls,1)); font-weight:800; margin:3.6cqw 0 0; }
+  .taimall-intro{ list-style:none; margin:5.4cqw 0 0; padding:0; }
+  .taimall-intro li{ font-size:calc(2.95cqw * var(--fontscale,1) * var(--ls,1));
+    line-height:calc(2.05 * var(--lhmul,1)); }
+  .taimall-intro li::before{ content:"・"; }
+  .taimall-rule{ border:none; border-top:1px solid #2b2b2b; margin:5.2cqw 0 0; align-self:stretch; }
+  .taimall-spacer{ flex:1; min-height:3cqw; }
+  .taimall-price{ margin-bottom:2.6cqw; }
+  .taimall-price .tm-line{ display:flex; align-items:baseline; gap:1.4cqw; white-space:nowrap; }
+  .taimall-price .tm-amount{ font-variant-numeric:tabular-nums; }
+  .taimall-orig{ font-size:calc(3.5cqw * var(--fontscale,1) * var(--ls,1)); font-weight:800; }
+  .taimall-special{ font-size:calc(4.6cqw * var(--fontscale,1) * var(--ls,1)); font-weight:800; margin-top:1.6cqw; }
+  .taimall-special .tm-amount{ color:var(--accent,#e60012); }
+  /* 限量 X 台：右下角紅色圓圈章。--ls（限量標籤）控制整個圓圈大小＋位置；圈內文字另有 .taimall-limit-inner 的 --ls 可再微調 */
+  .taimall-limit{ position:absolute; right:5.5cqw; bottom:6.5cqw;
+    width:calc(17cqw * var(--fontscale,1) * var(--ls,1)); height:calc(17cqw * var(--fontscale,1) * var(--ls,1));
+    border-radius:50%; background:var(--accent,#e60012); color:#fff;
+    display:flex; align-items:center; justify-content:center;
+    font-size:calc(2.7cqw * var(--fontscale,1) * var(--ls,1)); font-weight:800; line-height:1.3; }
+  .taimall-limit-inner{ display:flex; flex-direction:column; align-items:center; text-align:center;
+    font-size:calc(1em * var(--ls,1)); }
+  .taimall-limit-inner .tm-amount{ font-size:1.15em; }
+
   /* ---------- print (prints exactly what the A4 preview shows) ---------- */
   @media print{
     @page{ size:A4; margin:0; }
@@ -255,6 +296,7 @@
         <button type="button" data-tpl="specs">規格價目表</button>
         <button type="button" data-tpl="compare">單品比價卡</button>
         <button type="button" data-tpl="dome">大巨蛋門市卡</button>
+        <button type="button" data-tpl="taimall">台茂特賣會</button>
       </div>
       <button type="button" class="btn ghost" id="resetSampleBtn" style="width:100%;">重設為此版型範例內容</button>
     </fieldset>
@@ -453,6 +495,52 @@
         <label class="field"><span class="lbl">隔行底色（規格價目表式專用）</span><input type="color" id="domeRowShade"></label>
       </fieldset>
     </div>
+
+    <!-- ===== TAIMALL (台茂特賣會) FORM ===== -->
+    <div id="formTaimall">
+      <fieldset>
+        <legend>Excel 批次匯入</legend>
+        <p class="tiny" style="margin:0 0 8px;">欄位順序：品牌 ｜ 商品名稱 ｜ 型號 ｜ 商品介紹 ｜ 原價 ｜ 新品特價 ｜ 限量（選填）。「商品介紹」請在同一格用 Alt+Enter 換行，每行會變一個「・」項目。</p>
+        <button type="button" class="btn" id="taimallDownloadTemplate" style="width:100%;margin-bottom:8px;">↓ 下載範本 Excel</button>
+        <label class="field"><span class="lbl">選擇填好的 Excel 檔匯入（會清空並取代目前整份清單）</span>
+          <input type="file" id="taimallImportFile" accept=".xlsx,.xls,.csv"></label>
+        <p class="tiny" id="taimallImportMsg" style="margin:2px 0 0;"></p>
+      </fieldset>
+      <fieldset>
+        <legend>品牌 Logo</legend>
+        <label class="field"><span class="lbl">品牌</span><select id="taimallBrand"></select></label>
+        <label class="field"><span class="lbl">或上傳圖片（取代上方選擇）</span><input type="file" id="taimallBrandUpload" accept="image/*"></label>
+        <label class="field"><span class="lbl">Logo 大小 <span id="taimallLogoScaleVal" class="tiny"></span></span>
+          <input type="range" id="taimallLogoScale" min="0.5" max="2" step="0.05" value="1" style="width:100%;"></label>
+      </fieldset>
+      <fieldset>
+        <legend>商品內容</legend>
+        <label class="field"><span class="lbl">商品名稱（可用 **文字** 加粗）</span><textarea id="taimallName" rows="2"></textarea></label>
+        <label class="field"><span class="lbl">型號</span><input type="text" id="taimallModel"></label>
+        <div class="lbl" style="margin-bottom:6px;">商品介紹（每行一個「・」項目）</div>
+        <div class="listbox" id="taimallIntroList"></div>
+        <button type="button" class="btn-add" id="taimallAddIntro">+ 新增介紹行</button>
+      </fieldset>
+      <fieldset>
+        <legend>價格</legend>
+        <div class="row3" id="taimallOrigRow">
+          <label class="field"><span class="lbl">原價標籤</span><input type="text" id="taimallOrigLabel"></label>
+          <label class="field"><span class="lbl">原價金額</span><input type="text" id="taimallOrigPrice"></label>
+          <label class="field"><span class="lbl">單位</span><input type="text" id="taimallOrigUnit"></label>
+        </div>
+        <div class="row3" id="taimallSpecialRow">
+          <label class="field"><span class="lbl">特價標籤</span><input type="text" id="taimallSpecialLabel"></label>
+          <label class="field"><span class="lbl">特價金額</span><input type="text" id="taimallSpecialPrice"></label>
+          <label class="field"><span class="lbl">單位</span><input type="text" id="taimallSpecialUnit"></label>
+        </div>
+        <div class="row3" id="taimallLimitRow">
+          <label class="field"><span class="lbl">限量標籤</span><input type="text" id="taimallLimitLabel"></label>
+          <label class="field"><span class="lbl">限量數量（留空不顯示）</span><input type="text" id="taimallLimit"></label>
+          <label class="field"><span class="lbl">單位</span><input type="text" id="taimallLimitUnit"></label>
+        </div>
+        <label class="field"><span class="lbl">強調色（新品特價／限量的數字）</span><input type="color" id="taimallAccent"></label>
+      </fieldset>
+    </div>
   </aside>
 
   <!-- ============ RIGHT: STAGE ============ -->
@@ -462,7 +550,7 @@
         <input type="range" id="zoom" min="0.5" max="4" step="0.1" value="1">
       </div>
       <div class="grp">標籤間距
-        <input type="range" id="pageGap" min="0" max="2" step="0.1" value="0.4">
+        <input type="range" id="pageGap" min="0" max="2" step="0.1" value="0.2">
         <span id="pageGapVal" class="tiny"></span>
       </div>
       <button type="button" class="btn primary" id="printBtn">列印 / 存成 PDF</button>
@@ -475,6 +563,7 @@
   </main>
 </div>
 
+<script src="vendor/xlsx.full.min.js"></script>
 <script>
 (function(){
   "use strict";
@@ -686,13 +775,34 @@
         "dome.row.1":{fontScale:1.2, dx:0, dy:0},
         "dome.dim":{fontScale:1.25, dx:0, dy:0}
       }
+    },
+    taimall: {
+      template:"taimall",
+      size:{w:10.5,h:14.85}, copies:1, cutGuides:true,
+      taimallBrand:"lg-color", taimallBrandUpload:"", taimallLogoScale:1,
+      lineHeightScale:1, fontScale:1,
+      taimallName:"PuriCare™ 360°空氣清淨機 - 寵物功能增加版二代/建議適用30坪(雙層)",
+      taimallModel:"AS101DBY0",
+      taimallIntro:["CASR值:12.34","360°強力淨化","多重過濾系統、獨特清淨循環扇","寵物模式增強吸力"],
+      taimallOrigLabel:"原價", taimallOrigPrice:"36,800", taimallOrigUnit:"元",
+      taimallSpecialLabel:"新品特價", taimallSpecialPrice:"29,900", taimallSpecialUnit:"元",
+      taimallLimitLabel:"限量", taimallLimit:"", taimallLimitUnit:"台",
+      taimallAccent:"#e60012",
+      lineStyles:{
+        "taimall.name":{fontScale:1.15, dx:0, dy:0},
+        "taimall.model":{fontScale:1.25, dx:0, dy:0},
+        "taimall.origLine":{fontScale:1.45, dx:0, dy:0},
+        "taimall.specialLine":{fontScale:1.3, dx:0, dy:0},
+        "taimall.limitLine":{fontScale:1.15, dx:0, dy:0}
+      }
     }
   };
+  var TAIMALL_DEFAULT_LINE_STYLES = DEFAULTS.taimall.lineStyles;
 
   var deck = null;       // {cards:[cardState, ...]}
   var activeIndex = 0;
   var state = null;      // reference to deck.cards[activeIndex] (the card being edited)
-  var pageGap = 0.4;     // cm between cards on the A4 sheet (whole-deck setting)
+  var pageGap = 0.2;     // cm between cards on the A4 sheet (whole-deck setting)
   var STORAGE_KEY = "priceTagGeneratorState_v1";
   var MAX_CARDS = 200;
 
@@ -718,6 +828,17 @@
     delete r.price; delete r.priceRed; delete r.specialPrice; delete r.specialRed;
     return r.prices;
   }
+  // 台茂特賣會卡：早期存成 A4 尺寸的換成 10.5×14.85cm；補上缺少的預設字級（不覆蓋使用者已調過的）
+  function migrateTaimallSize(card){
+    if (card && card.template==="taimall"){
+      if (card.size && card.size.w===21 && card.size.h===29.7){ card.size = {w:10.5, h:14.85}; }
+      if (!card.lineStyles) card.lineStyles = {};
+      Object.keys(TAIMALL_DEFAULT_LINE_STYLES).forEach(function(k){
+        if (!card.lineStyles[k]) card.lineStyles[k] = clone(TAIMALL_DEFAULT_LINE_STYLES[k]);
+      });
+    }
+    return card;
+  }
   function migrateDomeTableRows(card){
     if (card && card.template==="dome" && Array.isArray(card.domeTableRows)){
       card.domeTableRows.forEach(function(r, i){
@@ -741,16 +862,17 @@
         if (parsed && Array.isArray(parsed.cards) && parsed.cards.length){
           parsed.cards.forEach(migrateLegacyDome11x16);
           parsed.cards.forEach(migrateDomeTableRows);
+          parsed.cards.forEach(migrateTaimallSize);
           return {cards:parsed.cards, activeIndex: Math.min(Math.max(0,parsed.activeIndex||0), parsed.cards.length-1),
-            gap: (typeof parsed.gap === "number" ? parsed.gap : 0.4)};
+            gap: (typeof parsed.gap === "number" ? parsed.gap : 0.2)};
         }
         // migrate old single-card save format
         if (parsed && parsed.template && DEFAULTS[parsed.template]){
-          return {cards:[migrateDomeTableRows(migrateLegacyDome11x16(parsed))], activeIndex:0, gap:0.4};
+          return {cards:[migrateTaimallSize(migrateDomeTableRows(migrateLegacyDome11x16(parsed)))], activeIndex:0, gap:0.2};
         }
       }
     }catch(e){}
-    return {cards:[clone(DEFAULTS.dome)], activeIndex:0, gap:0.4};
+    return {cards:[clone(DEFAULTS.dome)], activeIndex:0, gap:0.2};
   }
 
   function saveState(){
@@ -860,6 +982,19 @@
     injectLineTools("domeHeadline", "dome.headline");
     injectLineTools("domeSub", "dome.sub");
     injectLineTools("domeDim", "dome.dim");
+    injectLineTools("taimallName", "taimall.name");
+    injectLineTools("taimallModel", "taimall.model");
+    injectLineTools("taimallOrigRow", "taimall.origLine");
+    injectLineTools("taimallSpecialRow", "taimall.specialLine");
+    var limitAnchor = document.getElementById("taimallLimitRow");
+    if (limitAnchor){
+      var lb = document.createElement("div");
+      lb.innerHTML =
+        '<div class="linetool-row"><span class="linetool-label">限量圓圈：大小 / 位置</span>'+lineToolsHTML("taimall.limitLine")+'</div>'
+       +'<div class="linetool-row"><span class="linetool-label">限量圈內：文字大小 / 位置</span>'+lineToolsHTML("taimall.limitText")+'</div>';
+      var ref = limitAnchor.nextSibling;
+      while (lb.firstChild){ limitAnchor.parentNode.insertBefore(lb.firstChild, ref); }
+    }
   }
 
   /* ---------- card builders ---------- */
@@ -1001,11 +1136,182 @@
     + '</div>';
   }
 
+  function buildTaimall(s){
+    var brand = brandImgTag(s.taimallBrand, s.taimallBrandUpload, "taimall-brand", s.taimallLogoScale);
+    var imLogo = brandFile("imageaudio");
+    var introHTML = (s.taimallIntro||[]).map(function(t, i){
+      if (!t || t.trim()==="") return "";
+      return '<li style="'+lineStyleAttr(s,"taimall.intro."+i)+'">'+fmt(t)+'</li>';
+    }).join("");
+    var modelHTML = (s.taimallModel||"").trim()
+      ? '<p class="taimall-model" style="'+lineStyleAttr(s,"taimall.model")+'">'+fmt(s.taimallModel)+'</p>' : "";
+    var origHTML = "";
+    if (String(s.taimallOrigPrice==null?"":s.taimallOrigPrice).trim() !== ""){
+      origHTML = '<div class="tm-line taimall-orig" style="'+lineStyleAttr(s,"taimall.origLine")+'">'
+        + fmt(s.taimallOrigLabel)+' <span class="tm-amount">'+money(s.taimallOrigPrice)+'</span> '+fmt(s.taimallOrigUnit)
+      + '</div>';
+    }
+    var limit = String(s.taimallLimit==null?"":s.taimallLimit).trim();
+    var limitHTML = limit !== ""
+      ? '<div class="taimall-limit" style="'+lineStyleAttr(s,"taimall.limitLine")+'">'
+          + '<span class="taimall-limit-inner" style="'+lineStyleAttr(s,"taimall.limitText")+'">'
+            + '<span>'+fmt(s.taimallLimitLabel)+'</span>'
+            + '<span><span class="tm-amount">'+money(s.taimallLimit)+'</span> '+fmt(s.taimallLimitUnit)+'</span>'
+          + '</span>'
+        + '</div>' : "";
+    return '<div class="cardface taimall" style="--accent:'+esc(s.taimallAccent)+';--lhmul:'+(s.lineHeightScale||1)+';--fontscale:'+(s.fontScale||1)+'">'
+      + '<div class="taimall-top">'+(imLogo?'<img src="'+esc(imLogo)+'" class="taimall-logo-im" alt="ImageAudio">':'')+'</div>'
+      + '<div class="taimall-panel">'
+        + (brand || "")
+        + '<h1 class="taimall-name" style="'+lineStyleAttr(s,"taimall.name")+'">'+fmt(s.taimallName)+'</h1>'
+        + modelHTML
+        + '<ul class="taimall-intro">'+introHTML+'</ul>'
+        + '<hr class="taimall-rule">'
+        + '<div class="taimall-spacer"></div>'
+        + '<div class="taimall-price">'
+          + origHTML
+          + '<div class="tm-line taimall-special" style="'+lineStyleAttr(s,"taimall.specialLine")+'">'
+            + fmt(s.taimallSpecialLabel)+' <span class="tm-amount">'+money(s.taimallSpecialPrice)+'</span> '+fmt(s.taimallSpecialUnit)
+          + '</div>'
+          + limitHTML
+        + '</div>'
+      + '</div>'
+    + '</div>';
+  }
+
   function buildCardInner(s){
     if (s.template==="combo") return buildCombo(s);
     if (s.template==="specs") return buildSpecs(s);
     if (s.template==="dome") return buildDome(s);
+    if (s.template==="taimall") return buildTaimall(s);
     return buildCompare(s);
+  }
+
+  /* ---------- 台茂特賣會 Excel 批次匯入 ---------- */
+  // 把品牌名稱文字對應到 BRANDS 的 id（對不到就回空字串，之後可在該張卡片手動選）
+  var TAIMALL_BRAND_KEYWORDS = {
+    "lg":"lg-color", "樂金":"lg-color",
+    "samsung":"samsung", "三星":"samsung",
+    "sony":"sony", "新力":"sony",
+    "鐵三角":"audiotechnica", "audio-technica":"audiotechnica", "audio technica":"audiotechnica", "audiotechnica":"audiotechnica",
+    "audioquest":"audioquest", "aq":"audioquest",
+    "b&w":"bw", "bowers":"bw", "bw":"bw",
+    "b&o":"bo", "bang & olufsen":"bo", "bang and olufsen":"bo", "bo":"bo",
+    "bose":"bose",
+    "harman":"harmankardon", "harman kardon":"harmankardon", "harman/kardon":"harmankardon",
+    "hitachi":"hitachi", "日立":"hitachi",
+    "sharp":"sharp", "夏普":"sharp",
+    "denon":"denon", "天龍":"denon",
+    "marantz":"marantz", "馬蘭士":"marantz",
+    "devialet":"devialet",
+    "dynaudio":"dynaudio",
+    "linn":"linn",
+    "mcintosh":"mcintosh", "麥景圖":"mcintosh",
+    "cambridge":"cambridge", "cambridge audio":"cambridge",
+    "cado":"cado",
+    "sonus faber":"sonusfaber", "sonus":"sonusfaber",
+    "podspeakers":"podspeakers",
+    "映象":"imageaudio", "imageaudio":"imageaudio", "image audio":"imageaudio"
+  };
+  function matchBrandId(text){
+    var t = String(text==null?"":text).trim().toLowerCase();
+    if (t === "") return "";
+    if (TAIMALL_BRAND_KEYWORDS[t]) return TAIMALL_BRAND_KEYWORDS[t];
+    var exact = BRANDS.filter(function(b){
+      return b.id && (b.id===t || b.name.toLowerCase()===t);
+    })[0];
+    if (exact) return exact.id;
+    var k;
+    for (k in TAIMALL_BRAND_KEYWORDS){
+      if (TAIMALL_BRAND_KEYWORDS.hasOwnProperty(k) && t.indexOf(k) >= 0) return TAIMALL_BRAND_KEYWORDS[k];
+    }
+    var partial = BRANDS.filter(function(b){
+      return b.id && b.name && b.name.toLowerCase().split(/[\s（(]/)[0] === t;
+    })[0];
+    return partial ? partial.id : "";
+  }
+  // 「商品介紹」一格多行 -> 陣列；支援儲存格換行、以及「、」「;」「；」分隔
+  function splitTaimallIntro(text){
+    return String(text==null?"":text)
+      .split(/\r\n|\r|\n|、|;|；/)
+      .map(function(x){ return x.replace(/^[・･·••\-\s]+/, "").trim(); })
+      .filter(function(x){ return x !== ""; });
+  }
+  function cleanTaimallPrice(v){
+    if (v == null) return "";
+    return String(v).replace(/nt\s*\$?|\$|元|台|限量/gi, "").trim();
+  }
+  function rowToTaimallCard(r){
+    var base = clone(DEFAULTS.taimall);
+    base.taimallBrand = matchBrandId(r[0]);
+    base.taimallBrandUpload = "";
+    base.taimallName = String(r[1]==null?"":r[1]).trim();
+    base.taimallModel = String(r[2]==null?"":r[2]).trim();
+    base.taimallIntro = splitTaimallIntro(r[3]);
+    base.taimallOrigPrice = cleanTaimallPrice(r[4]);
+    base.taimallSpecialPrice = cleanTaimallPrice(r[5]);
+    base.taimallLimit = cleanTaimallPrice(r[6]);
+    base.lineStyles = clone(DEFAULTS.taimall.lineStyles); // 保留預設字級
+    return base;
+  }
+  function looksLikeHeaderRow(r){
+    var joined = r.join("");
+    return /商品名稱|品名|型號|商品介紹|新品特價|原價/.test(joined);
+  }
+  function parseTaimallWorkbook(arrayBuffer){
+    if (typeof XLSX === "undefined") throw new Error("Excel 函式庫未載入");
+    var wb = XLSX.read(arrayBuffer, {type:"array"});
+    var ws = wb.Sheets[wb.SheetNames[0]];
+    if (!ws) return [];
+    var rows = XLSX.utils.sheet_to_json(ws, {header:1, blankrows:false, defval:""});
+    var cards = [];
+    rows.forEach(function(r, i){
+      if (!Array.isArray(r)) return;
+      if (i === 0 && looksLikeHeaderRow(r)) return;
+      var brand = String(r[0]==null?"":r[0]).trim();
+      var name = String(r[1]==null?"":r[1]).trim();
+      if (name === "" && brand === "") return;
+      cards.push(rowToTaimallCard(r));
+    });
+    return cards;
+  }
+  function downloadTaimallTemplate(){
+    if (typeof XLSX === "undefined"){ setTaimallMsg("Excel 函式庫未載入，無法產生範本"); return; }
+    var headers = ["品牌", "商品名稱", "型號", "商品介紹（同一格 Alt+Enter 換行）", "原價", "新品特價", "限量（選填）"];
+    var example = [
+      "LG",
+      "PuriCare™ 360°空氣清淨機 - 寵物功能增加版二代/建議適用30坪(雙層)",
+      "AS101DBY0",
+      "CASR值:12.34\n360°強力淨化\n多重過濾系統、獨特清淨循環扇\n寵物模式增強吸力",
+      "36,800", "29,900", ""
+    ];
+    var ws = XLSX.utils.aoa_to_sheet([headers, example]);
+    ws["!cols"] = [{wch:12},{wch:48},{wch:16},{wch:38},{wch:12},{wch:12},{wch:14}];
+    var wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "台茂特賣會");
+    XLSX.writeFile(wb, "台茂特賣會_匯入範本.xlsx");
+  }
+  function setTaimallMsg(text){
+    var el = document.getElementById("taimallImportMsg");
+    if (el) el.textContent = text || "";
+  }
+  function importTaimallFromFile(file){
+    var reader = new FileReader();
+    reader.onload = function(){
+      var cards;
+      try{ cards = parseTaimallWorkbook(reader.result); }
+      catch(err){ setTaimallMsg("讀取失敗：" + (err && err.message ? err.message : err)); return; }
+      if (!cards.length){ setTaimallMsg("這個檔案裡找不到可匯入的商品列（請確認欄位順序與範本一致）"); return; }
+      if (!window.confirm("將清空目前整份清單，改成匯入的 " + cards.length + " 筆商品，確定？")) return;
+      deck.cards = cards;
+      activeIndex = 0;
+      state = deck.cards[0];
+      populateForm();
+      renderCard();
+      setTaimallMsg("已匯入 " + cards.length + " 筆商品，請逐一點選左側清單確認 / 修改，內容會自動存檔。");
+    };
+    reader.onerror = function(){ setTaimallMsg("檔案讀取失敗"); };
+    reader.readAsArrayBuffer(file);
   }
 
   /* ---------- rendering ---------- */
@@ -1017,8 +1323,24 @@
     updateTotalSummary();
   }
 
+  // a card sized to the full A4 sheet (e.g. dome A4 版面) should bleed edge-to-edge, not sit inside the usual 1cm print margin
+  function isFullBleedCard(c){
+    return c.size.w===21 && c.size.h===29.7;
+  }
+  // 若卡片尺寸剛好能整除 A4（例如台茂 10.5×14.85＝A4 的四分之一），就以無邊界拼版方式一頁排多張
+  function a4TileGrid(c){
+    var w = c.size.w, h = c.size.h;
+    if (!(w>0 && h>0)) return null;
+    var cols = Math.round(21/w), rows = Math.round(29.7/h);
+    if (cols<1 || rows<1) return null;
+    if (Math.abs(cols*w - 21) > 0.2 || Math.abs(rows*h - 29.7) > 0.2) return null;
+    if (cols*rows < 2) return null; // 單張滿版走既有 full-bleed 路徑
+    return {cols:cols, rows:rows, cap:cols*rows};
+  }
+
   // Packs every printed instance (each card x its copies) into A4 pages, wrapping rows/pages
   // the same way the print layout will, so the on-screen preview is what actually prints.
+  // 回傳 page 物件陣列：{tile:是否無邊界拼版, cols, cap, items:[...]}
   function buildPages(){
     var margin = 1, gap = pageGap;
     var usableW = 21 - margin*2, usableH = 29.7 - margin*2;
@@ -1027,34 +1349,45 @@
       var n = Math.max(1, Math.min(200, parseInt(c.copies,10) || 1));
       for (var i=0; i<n; i++) items.push({cardIndex:ci, card:c});
     });
-    var pages = [[]];
-    var x=0, y=0, rowH=0;
+    var pages = [];
+    var normalPage = null, x=0, y=0, rowH=0;
+    var tilePage = null, tileKey = null;
+    function startNormal(){ normalPage = {tile:false, items:[]}; pages.push(normalPage); x=0; y=0; rowH=0; tilePage=null; }
     items.forEach(function(it){
+      var g = a4TileGrid(it.card);
+      if (g){
+        var key = it.card.size.w+"x"+it.card.size.h;
+        if (!tilePage || tileKey!==key || tilePage.items.length >= tilePage.cap){
+          tilePage = {tile:true, cols:g.cols, cap:g.cap, items:[]};
+          tileKey = key; pages.push(tilePage); normalPage = null;
+        }
+        tilePage.items.push(it);
+        return;
+      }
+      tilePage = null;
+      if (!normalPage) startNormal();
       var w = it.card.size.w, h = it.card.size.h;
       if (x>0 && x+w > usableW+0.01){ x=0; y+=rowH+gap; rowH=0; }
-      if (y>0 && y+h > usableH+0.01){ pages.push([]); x=0; y=0; rowH=0; }
-      pages[pages.length-1].push(it);
+      if (y>0 && y+h > usableH+0.01){ startNormal(); }
+      normalPage.items.push(it);
       x += w+gap;
       rowH = Math.max(rowH, h);
     });
+    if (!pages.length) pages.push({tile:false, items:[]});
     return pages;
-  }
-
-  // a card sized to the full A4 sheet (e.g. dome A4 版面) should bleed edge-to-edge, not sit inside the usual 1cm print margin
-  function isFullBleedCard(c){
-    return c.size.w===21 && c.size.h===29.7;
   }
 
   function renderPages(){
     var pages = buildPages();
-    var html = pages.map(function(pageItems){
-      var fullBleed = pageItems.length===1 && isFullBleedCard(pageItems[0].card);
-      var inner = pageItems.map(function(it){
+    var html = pages.map(function(page){
+      var items = page.items;
+      var fullBleed = page.tile || (items.length===1 && isFullBleedCard(items[0].card));
+      var inner = items.map(function(it){
         var c = it.card;
-        var cls = "card" + (c.template==="dome" ? " card-dome" : "") + (c.cutGuides ? " cut-guide" : "") + (it.cardIndex===activeIndex ? " card-active" : "");
+        var cls = "card" + (c.template==="dome" ? " card-dome" : "") + (c.template==="taimall" ? " card-dome card-taimall" : "") + (c.cutGuides ? " cut-guide" : "") + (it.cardIndex===activeIndex ? " card-active" : "");
         return '<div class="'+cls+'" data-card-idx="'+it.cardIndex+'" style="width:'+c.size.w+'cm;height:'+c.size.h+'cm;">'+buildCardInner(c)+'</div>';
       }).join("");
-      var innerCls = "a4-inner" + (fullBleed ? " full-bleed" : "");
+      var innerCls = "a4-inner" + (fullBleed ? " full-bleed" : "") + (page.tile ? " a4-tile" : "");
       var innerStyle = fullBleed ? "" : ' style="gap:'+pageGap+'cm"';
       return '<div class="a4-sheet"><div class="'+innerCls+'"'+innerStyle+'>'+inner+'</div></div>';
     }).join("");
@@ -1078,11 +1411,12 @@
   /* ---------- card deck management ---------- */
   function cardLabel(c){
     var tplName = c.template==="combo" ? "組合卡" : c.template==="specs" ? "規格表" :
-      c.template==="dome" ? "大巨蛋卡" : "比價卡";
+      c.template==="dome" ? "大巨蛋卡" : c.template==="taimall" ? "台茂卡" : "比價卡";
     var text = "";
     if (c.template==="combo") text = c.comboHeadline;
     else if (c.template==="specs") text = c.specsHeadline1;
     else if (c.template==="dome") text = (c.domeHeadline||"").split("\n")[0];
+    else if (c.template==="taimall") text = (c.taimallName||"").split("\n")[0];
     else text = (c.compareLines||"").split("\n")[0];
     text = (text||"").replace(/\*\*/g,"").trim();
     return tplName + (text ? "｜"+text : "");
@@ -1160,6 +1494,21 @@
           + '<button type="button" class="btn-remove" data-idx="'+i+'">×</button>'
         + '</div>'
         + lineToolsHTML("combo.item."+i)
+      + '</div>';
+    }).join("");
+    syncLineTools();
+  }
+
+  /* ---------- 台茂特賣會 商品介紹 動態列 ---------- */
+  function renderTaimallIntro(){
+    var box = document.getElementById("taimallIntroList");
+    box.innerHTML = (state.taimallIntro||[]).map(function(item, i){
+      return '<div class="row-item-group">'
+        + '<div class="row-item">'
+          + '<input type="text" class="taimall-intro-input" data-idx="'+i+'" value="'+esc(item)+'">'
+          + '<button type="button" class="btn-remove taimall-intro-remove" data-idx="'+i+'">×</button>'
+        + '</div>'
+        + lineToolsHTML("taimall.intro."+i)
       + '</div>';
     }).join("");
     syncLineTools();
@@ -1297,10 +1646,11 @@
     document.getElementById("formSpecs").classList.toggle("hidden", state.template!=="specs");
     document.getElementById("formCompare").classList.toggle("hidden", state.template!=="compare");
     document.getElementById("formDome").classList.toggle("hidden", state.template!=="dome");
+    document.getElementById("formTaimall").classList.toggle("hidden", state.template!=="taimall");
 
     fillSizePresetOptions();
-    // 大巨蛋門市卡：尺寸由「背景底圖」決定，隱藏「尺寸預設」下拉避免門市選錯（寬高仍可手動微調）
-    document.getElementById("sizePresetRow").classList.toggle("hidden", state.template === "dome");
+    // 大巨蛋門市卡尺寸由底圖決定、台茂特賣會固定 A4 滿版：隱藏「尺寸預設」下拉避免門市選錯（寬高仍可手動微調）
+    document.getElementById("sizePresetRow").classList.toggle("hidden", state.template === "dome" || state.template === "taimall");
     document.getElementById("sizeW").value = state.size.w;
     document.getElementById("sizeH").value = state.size.h;
     var presetMatch = Object.keys(SIZE_PRESETS).filter(function(k){
@@ -1372,6 +1722,23 @@
       document.getElementById("domeDim").value = state.domeDim || "";
       document.getElementById("domeAccent").value = state.domeAccent;
       document.getElementById("domeRowShade").value = state.domeRowShade || "#ece5da";
+    } else if (state.template==="taimall"){
+      fillBrandSelect(document.getElementById("taimallBrand"), state.taimallBrand);
+      document.getElementById("taimallLogoScale").value = state.taimallLogoScale || 1;
+      document.getElementById("taimallLogoScaleVal").textContent = Math.round((state.taimallLogoScale||1)*100)+"%";
+      document.getElementById("taimallName").value = state.taimallName || "";
+      document.getElementById("taimallModel").value = state.taimallModel || "";
+      renderTaimallIntro();
+      document.getElementById("taimallOrigLabel").value = state.taimallOrigLabel || "";
+      document.getElementById("taimallOrigPrice").value = state.taimallOrigPrice || "";
+      document.getElementById("taimallOrigUnit").value = state.taimallOrigUnit || "";
+      document.getElementById("taimallSpecialLabel").value = state.taimallSpecialLabel || "";
+      document.getElementById("taimallSpecialPrice").value = state.taimallSpecialPrice || "";
+      document.getElementById("taimallSpecialUnit").value = state.taimallSpecialUnit || "";
+      document.getElementById("taimallLimitLabel").value = state.taimallLimitLabel || "";
+      document.getElementById("taimallLimit").value = state.taimallLimit || "";
+      document.getElementById("taimallLimitUnit").value = state.taimallLimitUnit || "";
+      document.getElementById("taimallAccent").value = state.taimallAccent || "#e60012";
     }
     syncLineTools();
   }
@@ -1469,11 +1836,16 @@
       state.cutGuides = this.checked; renderCard();
     });
     document.getElementById("fitPageBtn").addEventListener("click", function(){
-      var gap = pageGap, margin = 1.0;
-      var usableW = 21 - margin*2, usableH = 29.7 - margin*2;
-      var cols = Math.max(1, Math.floor((usableW + gap) / (state.size.w + gap)));
-      var rows = Math.max(1, Math.floor((usableH + gap) / (state.size.h + gap)));
-      state.copies = cols*rows;
+      var tile = a4TileGrid(state);
+      if (tile){
+        state.copies = tile.cap;
+      } else {
+        var gap = pageGap, margin = 1.0;
+        var usableW = 21 - margin*2, usableH = 29.7 - margin*2;
+        var cols = Math.max(1, Math.floor((usableW + gap) / (state.size.w + gap)));
+        var rows = Math.max(1, Math.floor((usableH + gap) / (state.size.h + gap)));
+        state.copies = cols*rows;
+      }
       document.getElementById("copies").value = state.copies;
       renderCard();
     });
@@ -1680,6 +2052,50 @@
         state.domeTableRows.splice(+e.target.dataset.idx,1); renderDomeTableRows(); renderCard();
       }
     });
+
+    /* ---- 台茂特賣會 ---- */
+    document.getElementById("taimallDownloadTemplate").addEventListener("click", downloadTaimallTemplate);
+    document.getElementById("taimallImportFile").addEventListener("change", function(){
+      var f = this.files[0]; if (!f) return;
+      importTaimallFromFile(f);
+      this.value = "";
+    });
+    document.getElementById("taimallBrand").addEventListener("change", function(){ state.taimallBrand=this.value; renderCard(); });
+    document.getElementById("taimallBrandUpload").addEventListener("change", function(){
+      var f=this.files[0]; if(!f) return;
+      fileToDataUrl(f, function(url){ state.taimallBrandUpload=url; renderCard(); });
+    });
+    document.getElementById("taimallLogoScale").addEventListener("input", function(){
+      state.taimallLogoScale = parseFloat(this.value) || 1;
+      document.getElementById("taimallLogoScaleVal").textContent = Math.round(state.taimallLogoScale*100)+"%";
+      renderCard();
+    });
+    document.getElementById("taimallName").addEventListener("input", function(){ state.taimallName=this.value; renderCard(); });
+    document.getElementById("taimallModel").addEventListener("input", function(){ state.taimallModel=this.value; renderCard(); });
+    document.getElementById("taimallAddIntro").addEventListener("click", function(){
+      if (!state.taimallIntro) state.taimallIntro = [];
+      state.taimallIntro.push(""); renderTaimallIntro(); renderCard();
+      var inputs = document.querySelectorAll("#taimallIntroList .taimall-intro-input");
+      if (inputs.length) inputs[inputs.length-1].focus();
+    });
+    document.getElementById("taimallIntroList").addEventListener("input", function(e){
+      if (!e.target.classList.contains("taimall-intro-input")) return;
+      state.taimallIntro[+e.target.dataset.idx] = e.target.value; renderCard();
+    });
+    document.getElementById("taimallIntroList").addEventListener("click", function(e){
+      if (!e.target.classList.contains("taimall-intro-remove")) return;
+      state.taimallIntro.splice(+e.target.dataset.idx,1); renderTaimallIntro(); renderCard();
+    });
+    document.getElementById("taimallOrigLabel").addEventListener("input", function(){ state.taimallOrigLabel=this.value; renderCard(); });
+    document.getElementById("taimallOrigPrice").addEventListener("input", function(){ state.taimallOrigPrice=this.value; renderCard(); });
+    document.getElementById("taimallOrigUnit").addEventListener("input", function(){ state.taimallOrigUnit=this.value; renderCard(); });
+    document.getElementById("taimallSpecialLabel").addEventListener("input", function(){ state.taimallSpecialLabel=this.value; renderCard(); });
+    document.getElementById("taimallSpecialPrice").addEventListener("input", function(){ state.taimallSpecialPrice=this.value; renderCard(); });
+    document.getElementById("taimallSpecialUnit").addEventListener("input", function(){ state.taimallSpecialUnit=this.value; renderCard(); });
+    document.getElementById("taimallLimitLabel").addEventListener("input", function(){ state.taimallLimitLabel=this.value; renderCard(); });
+    document.getElementById("taimallLimit").addEventListener("input", function(){ state.taimallLimit=this.value; renderCard(); });
+    document.getElementById("taimallLimitUnit").addEventListener("input", function(){ state.taimallLimitUnit=this.value; renderCard(); });
+    document.getElementById("taimallAccent").addEventListener("input", function(){ state.taimallAccent=this.value; renderCard(); });
   }
 
   function init(){
