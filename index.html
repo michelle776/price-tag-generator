@@ -617,11 +617,15 @@
     {v:"custom", label:"自訂尺寸"}
   ];
   var DOME_SIZE_PRESET_VALUES = ["12x9.5", "12x8", "7x4", "A4"];
+  var COMPARE_SIZE_PRESET_VALUES = ["7x4", "7.5x4"];
 
   function fillSizePresetOptions(){
-    var isDome = state && state.template === "dome";
-    var list = isDome
-      ? SIZE_PRESET_OPTIONS.filter(function(o){ return DOME_SIZE_PRESET_VALUES.indexOf(o.v) >= 0; })
+    var tpl = state && state.template;
+    var allow = tpl === "dome" ? DOME_SIZE_PRESET_VALUES
+      : tpl === "compare" ? COMPARE_SIZE_PRESET_VALUES
+      : null;
+    var list = allow
+      ? SIZE_PRESET_OPTIONS.filter(function(o){ return allow.indexOf(o.v) >= 0; })
       : SIZE_PRESET_OPTIONS;
     document.getElementById("sizePreset").innerHTML = list.map(function(o){
       return '<option value="'+esc(o.v)+'">'+esc(o.label)+'</option>';
