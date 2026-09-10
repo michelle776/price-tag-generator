@@ -294,7 +294,7 @@
       <div class="tabbar" id="templateTabs">
         <button type="button" data-tpl="combo">商品組合卡</button>
         <button type="button" data-tpl="specs">規格價目表</button>
-        <button type="button" data-tpl="compare">單品比價卡</button>
+        <button type="button" data-tpl="compare">台茂價格卡</button>
         <button type="button" data-tpl="dome">大巨蛋門市卡</button>
         <button type="button" data-tpl="taimall">台茂特賣會</button>
       </div>
@@ -1411,7 +1411,7 @@
   /* ---------- card deck management ---------- */
   function cardLabel(c){
     var tplName = c.template==="combo" ? "組合卡" : c.template==="specs" ? "規格表" :
-      c.template==="dome" ? "大巨蛋卡" : c.template==="taimall" ? "台茂卡" : "比價卡";
+      c.template==="dome" ? "大巨蛋卡" : c.template==="taimall" ? "台茂特賣卡" : "台茂價格卡";
     var text = "";
     if (c.template==="combo") text = c.comboHeadline;
     else if (c.template==="specs") text = c.specsHeadline1;
