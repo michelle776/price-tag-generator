@@ -55,7 +55,7 @@
   .tiny{ font-size:11px; color:var(--ui-sub); }
 
   .tabbar{ display:flex; flex-wrap:wrap; gap:6px; margin-bottom:16px; }
-  .tabbar button{ flex:1 1 28%; min-width:88px; padding:9px 4px; font-size:12.5px; font-weight:700; border-radius:7px;
+  .tabbar button{ flex:1 1 40%; min-width:88px; padding:9px 4px; font-size:12.5px; font-weight:700; border-radius:7px;
     border:1px solid #d8d2c8; background:#fff; color:var(--ui-sub); cursor:pointer; }
   .tabbar button.active{ background:var(--ui-accent); border-color:var(--ui-accent); color:#fff; }
 
@@ -189,6 +189,22 @@
   .compare-price .special{ font-size:calc(3.9cqw * var(--fontscale,1) * var(--ls,1)); font-weight:700; color:var(--accent,#d3311f); margin:0; font-variant-numeric:tabular-nums; }
   .compare-price .special .big{ font-size:1.5em; font-weight:800; }
 
+  /* 天母SOGO 10×7 小張電視價格表：左上 Logo、系列名稱、型號，左下尺寸小字、右下大價格 */
+  .cardface.sogotv{ justify-content:flex-start; padding:5.4cqw 5.4cqw 8.4cqw; }
+  .sogotv-logo{ height:calc(9cqw * var(--logoscale,1)); max-width:calc(50cqw * var(--logoscale,1)); width:auto; object-fit:contain; align-self:flex-start; margin-bottom:4.4cqw; }
+  .sogotv-headline p{ margin:0; font-size:calc(4.65cqw * var(--fontscale,1) * var(--ls,1)); font-weight:500; line-height:calc(1.32 * var(--lhmul,1)); }
+  .sogotv-headline .hl{ color:var(--accent,#9b2f28); }
+  .sogotv-model{ font-size:calc(4.25cqw * var(--fontscale,1) * var(--ls,1)); font-weight:500; margin:2.4cqw 0 0; }
+  .sogotv-bottom{ margin-top:auto; display:flex; justify-content:space-between; align-items:flex-end; gap:2.4cqw; }
+  .sogotv-spec{ font-size:calc(2.62cqw * var(--fontscale,1) * var(--ls,1)); line-height:calc(1.65 * var(--lhmul,1)); color:#2b2825; white-space:nowrap; }
+  .sogotv-price{ font-size:calc(6.84cqw * var(--fontscale,1) * var(--ls,1)); font-weight:800; line-height:1; white-space:nowrap; font-variant-numeric:tabular-nums; }
+  /* 有填特價時：原價縮小在上、特價（強調色）在下 */
+  .sogotv-prices{ display:flex; flex-direction:column; align-items:flex-end; gap:1.2cqw; }
+  .sogotv-price.has-special{ font-size:calc(3.6cqw * var(--fontscale,1) * var(--ls,1)); font-weight:700; }
+  .sogotv-price.special{ color:var(--accent,#9b2f28); font-size:calc(5.6cqw * var(--fontscale,1) * var(--ls,1)); }
+  .sogotv-price .lbl{ font-size:0.5em; font-weight:700; margin-right:0.35em; }
+  .sogotv-price.has-special .lbl{ font-size:1em; }
+
   /* dome template (遠東 Garden City 大巨蛋門市) */
   .cardface.dome{
     justify-content:flex-start; padding:7cqw 0 var(--dome-bottompad,11cqw) 0;
@@ -286,16 +302,21 @@
       <legend>價格牌清單</legend>
       <div class="listbox" id="cardList"></div>
       <button type="button" class="btn-add" id="addCardBtn">+ 新增一張價格牌</button>
+      <div class="row2" style="margin-top:6px;">
+        <button type="button" class="btn" id="saveDeckBtn" style="font-size:12px;padding:7px;">儲存清單（下載檔案）</button>
+        <button type="button" class="btn" id="openDeckBtn" style="font-size:12px;padding:7px;">開啟清單檔案</button>
+      </div>
+      <input type="file" id="openDeckFile" accept=".json,application/json" class="hidden">
+      <p class="tiny" id="deckFileMsg" style="margin:6px 0 0;"></p>
       <p class="total-summary" id="totalSummary"></p>
     </fieldset>
 
     <fieldset>
       <legend>版型（套用於目前選取的卡片）</legend>
       <div class="tabbar" id="templateTabs">
-        <button type="button" data-tpl="combo">商品組合卡</button>
-        <button type="button" data-tpl="specs">規格價目表</button>
-        <button type="button" data-tpl="compare">台茂價格卡</button>
+        <button type="button" data-tpl="combo" data-group="sogo">天母SOGO</button>
         <button type="button" data-tpl="dome">大巨蛋門市卡</button>
+        <button type="button" data-tpl="compare">台茂價格卡</button>
         <button type="button" data-tpl="taimall">台茂特賣會</button>
       </div>
       <button type="button" class="btn ghost" id="resetSampleBtn" style="width:100%;">重設為此版型範例內容</button>
@@ -307,6 +328,8 @@
         <span class="lbl">尺寸預設</span>
         <select id="sizePreset">
           <option value="15x10">15 × 10 cm（橫式・組合卡常用）</option>
+          <option value="10.8x15">10.8 × 15 cm（直式・天母SOGO 規格價目表）</option>
+          <option value="10x7">10 × 7 cm（橫式・天母SOGO 小張電視價格表）</option>
           <option value="11x15">11 × 15 cm（直式・規格表常用）</option>
           <option value="7x4">7 × 4 cm（大巨蛋耳機價格牌）</option>
           <option value="7.5x4">7.5 × 4 cm（橫式・小卡常用）</option>
@@ -336,6 +359,52 @@
         <input type="range" id="lineHeightScale" min="0.8" max="1.6" step="0.05" value="1" style="width:100%;">
       </label>
     </fieldset>
+
+    <!-- ===== 天母SOGO：版面選擇（組合卡／規格價目表／小張電視價格表） ===== -->
+    <div id="formSogo">
+      <fieldset>
+        <legend>天母SOGO 版面</legend>
+        <label class="field"><span class="lbl">版面（切換會套用該版面的範例內容）</span>
+          <select id="sogoLayout">
+            <option value="combo">15 × 10 cm 商品組合卡（橫式）</option>
+            <option value="specs">10.8 × 15 cm 規格價目表（直式）</option>
+            <option value="sogotv">10 × 7 cm 小張電視價格表（橫式）</option>
+          </select>
+        </label>
+      </fieldset>
+    </div>
+
+    <!-- ===== 天母SOGO 10×7 小張電視價格表 FORM ===== -->
+    <div id="formSogoTv">
+      <fieldset>
+        <legend>品牌 Logo</legend>
+        <label class="field"><span class="lbl">品牌</span><select id="sogotvBrand"></select></label>
+        <label class="field"><span class="lbl">或上傳圖片（取代上方選擇）</span><input type="file" id="sogotvBrandUpload" accept="image/*"></label>
+        <label class="field"><span class="lbl">Logo 大小 <span id="sogotvLogoScaleVal" class="tiny"></span></span>
+          <input type="range" id="sogotvLogoScale" min="0.5" max="2" step="0.05" value="1" style="width:100%;"></label>
+      </fieldset>
+      <fieldset>
+        <legend>商品內容</legend>
+        <label class="field"><span class="lbl">系列名稱 / 特色（每行一句，可用 **文字** 加粗）</span><textarea id="sogotvHeadline" rows="2"></textarea></label>
+        <div id="sogotvHeadlineTools"></div>
+        <label class="field"><span class="lbl">標題中要強調的文字（會套用強調色，選用）</span><input type="text" id="sogotvHighlight"></label>
+        <label class="field"><span class="lbl">型號</span><input type="text" id="sogotvModel"></label>
+        <label class="field"><span class="lbl">尺寸 / 規格（左下小字，可分行）</span><textarea id="sogotvSpec" rows="2"></textarea></label>
+      </fieldset>
+      <fieldset>
+        <legend>價格</legend>
+        <div class="row2" id="sogotvPriceRow">
+          <label class="field"><span class="lbl">價格前綴</span><input type="text" id="sogotvCurrency"></label>
+          <label class="field"><span class="lbl">金額</span><input type="text" id="sogotvPrice"></label>
+        </div>
+        <div class="row2" id="sogotvSpecialRow">
+          <label class="field"><span class="lbl">特價標籤</span><input type="text" id="sogotvSpecialLabel"></label>
+          <label class="field"><span class="lbl">特價金額（留空不顯示）</span><input type="text" id="sogotvSpecialPrice"></label>
+        </div>
+        <label class="field"><span class="lbl">原價標籤（有填特價時，顯示在上方原價前）</span><input type="text" id="sogotvOrigLabel"></label>
+        <label class="field"><span class="lbl">強調色（標題強調字、特價）</span><input type="color" id="sogotvAccent"></label>
+      </fieldset>
+    </div>
 
     <!-- ===== COMBO FORM ===== -->
     <div id="formCombo">
@@ -598,6 +667,8 @@
   var SIZE_PRESETS = {
     "15x10": {w:15, h:10},
     "11x15": {w:11, h:15},
+    "10.8x15": {w:10.8, h:15},
+    "10x7":  {w:10, h:7},
     "7x4":   {w:7,  h:4},
     "7.5x4": {w:7.5,h:4},
     "12x8":  {w:12, h:8},
@@ -608,6 +679,8 @@
   // 「尺寸預設」下拉的選項；大巨蛋門市卡只顯示有對應底圖版型的那幾個尺寸
   var SIZE_PRESET_OPTIONS = [
     {v:"15x10",  label:"15 × 10 cm（橫式・組合卡常用）"},
+    {v:"10.8x15", label:"10.8 × 15 cm（直式・天母SOGO 規格價目表）"},
+    {v:"10x7",   label:"10 × 7 cm（橫式・天母SOGO 小張電視價格表）"},
     {v:"11x15",  label:"11 × 15 cm（直式・規格表常用）"},
     {v:"7x4",    label:"7 × 4 cm（大巨蛋耳機價格牌）"},
     {v:"7.5x4",  label:"7.5 × 4 cm（橫式・小卡常用）"},
@@ -732,7 +805,7 @@
     },
     specs: {
       template:"specs",
-      size:{w:11,h:15}, copies:1, cutGuides:false,
+      size:{w:10.8,h:15}, copies:1, cutGuides:false,
       specsBrand:"samsung", specsBrandUpload:"", specsLogoScale:1, lineHeightScale:1, fontScale:1,
       specsHeadline1:"4K Neo QLED 量子電視 QN87D系列",
       specsHighlight:"QN87D",
@@ -780,6 +853,19 @@
         "dome.dim":{fontScale:1.25, dx:0, dy:0}
       }
     },
+    sogotv: {
+      template:"sogotv",
+      size:{w:10,h:7}, copies:1, cutGuides:false,
+      sogotvBrand:"samsung", sogotvBrandUpload:"", sogotvLogoScale:1, lineHeightScale:1, fontScale:1,
+      sogotvHeadline:"75吋 Neo QLED QN800D 系列\n抗反光究極黑面板",
+      sogotvHighlight:"",
+      sogotvModel:"QA75QN800DXXZW",
+      sogotvSpec:"含底座 W 166.8 H 102.4 D 28.6(CM)\n不含底座 W 166.8 H 95.6 D1.8 (CM)",
+      sogotvCurrency:"NT $", sogotvPrice:"179,900",
+      sogotvOrigLabel:"原價", sogotvSpecialLabel:"特價", sogotvSpecialPrice:"",
+      sogotvAccent:"#9b2f28",
+      lineStyles:{}
+    },
     taimall: {
       template:"taimall",
       size:{w:10.5,h:14.85}, copies:1, cutGuides:true,
@@ -802,6 +888,10 @@
     }
   };
   var TAIMALL_DEFAULT_LINE_STYLES = DEFAULTS.taimall.lineStyles;
+
+  // 天母SOGO 分頁底下的三種版面（內部仍是各自獨立的版型，舊存檔不受影響）
+  var SOGO_TEMPLATES = ["combo", "specs", "sogotv"];
+  function isSogoTemplate(tpl){ return SOGO_TEMPLATES.indexOf(tpl) >= 0; }
 
   // 台茂價格卡：切換尺寸預設時套用對應的範例內容（7×4＝Devialet、7.5×4＝LG）
   var COMPARE_SAMPLES = {
@@ -882,25 +972,79 @@
     return card;
   }
 
+  // 把存檔內容（瀏覽器自動存檔或「儲存清單」下載的檔案）整理成 deck；看不懂的內容回傳 null
+  function normalizeDeck(parsed){
+    if (parsed && Array.isArray(parsed.cards)){
+      var cards = parsed.cards.filter(function(c){ return c && DEFAULTS[c.template] && c.size; });
+      if (!cards.length) return null;
+      cards.forEach(migrateLegacyDome11x16);
+      cards.forEach(migrateDomeTableRows);
+      cards.forEach(migrateTaimallSize);
+      return {cards:cards, activeIndex: Math.min(Math.max(0,parsed.activeIndex||0), cards.length-1),
+        gap: (typeof parsed.gap === "number" ? parsed.gap : 0.2)};
+    }
+    // migrate old single-card save format
+    if (parsed && parsed.template && DEFAULTS[parsed.template]){
+      return {cards:[migrateTaimallSize(migrateDomeTableRows(migrateLegacyDome11x16(parsed)))], activeIndex:0, gap:0.2};
+    }
+    return null;
+  }
+
   function loadDeck(){
     try{
       var raw = localStorage.getItem(STORAGE_KEY);
       if (raw){
-        var parsed = JSON.parse(raw);
-        if (parsed && Array.isArray(parsed.cards) && parsed.cards.length){
-          parsed.cards.forEach(migrateLegacyDome11x16);
-          parsed.cards.forEach(migrateDomeTableRows);
-          parsed.cards.forEach(migrateTaimallSize);
-          return {cards:parsed.cards, activeIndex: Math.min(Math.max(0,parsed.activeIndex||0), parsed.cards.length-1),
-            gap: (typeof parsed.gap === "number" ? parsed.gap : 0.2)};
-        }
-        // migrate old single-card save format
-        if (parsed && parsed.template && DEFAULTS[parsed.template]){
-          return {cards:[migrateTaimallSize(migrateDomeTableRows(migrateLegacyDome11x16(parsed)))], activeIndex:0, gap:0.2};
-        }
+        var d = normalizeDeck(JSON.parse(raw));
+        if (d) return d;
       }
     }catch(e){}
     return {cards:[clone(DEFAULTS.dome)], activeIndex:0, gap:0.2};
+  }
+
+  /* ---------- 儲存清單成檔案 / 開啟清單檔案 ---------- */
+  function deckFileData(){
+    return {app:"price-tag-generator", version:1, savedAt:new Date().toISOString(),
+      cards:deck.cards, activeIndex:activeIndex, gap:pageGap};
+  }
+  function deckFileName(now){
+    function pad(n){ return (n<10?"0":"")+n; }
+    return "價格牌清單_"+now.getFullYear()+pad(now.getMonth()+1)+pad(now.getDate())+"-"+pad(now.getHours())+pad(now.getMinutes())+".json";
+  }
+  function setDeckFileMsg(text){
+    var el = document.getElementById("deckFileMsg");
+    if (el) el.textContent = text || "";
+  }
+  function saveDeckToFile(){
+    var blob = new Blob([JSON.stringify(deckFileData(), null, 1)], {type:"application/json"});
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url;
+    a.download = deckFileName(new Date());
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+    setDeckFileMsg("已下載「"+a.download+"」（共 "+deck.cards.length+" 張設計），之後按「開啟清單檔案」選它即可還原。");
+  }
+  function openDeckFromFile(file){
+    var reader = new FileReader();
+    reader.onload = function(){
+      var d = null;
+      try{ d = normalizeDeck(JSON.parse(reader.result)); }catch(e){}
+      if (!d){ setDeckFileMsg("無法開啟：這不是價格牌產生器儲存的清單檔案。"); return; }
+      if (!window.confirm("將以檔案中的 "+d.cards.length+" 張設計取代目前整份清單，確定？（建議先按「儲存清單」備份目前內容）")) return;
+      deck = {cards:d.cards};
+      activeIndex = d.activeIndex;
+      pageGap = d.gap;
+      state = deck.cards[activeIndex];
+      document.getElementById("pageGap").value = pageGap;
+      document.getElementById("pageGapVal").textContent = pageGap.toFixed(1)+"cm";
+      populateForm();
+      renderCard();
+      setDeckFileMsg("已開啟「"+file.name+"」，共 "+d.cards.length+" 張設計。");
+    };
+    reader.onerror = function(){ setDeckFileMsg("檔案讀取失敗"); };
+    reader.readAsText(file);
   }
 
   function saveState(){
@@ -1004,6 +1148,10 @@
     injectLineTools("comboSpecialRow", "combo.specialLine");
     injectLineTools("specsHeadline1", "specs.headline1");
     injectLineTools("specsHeadline2", "specs.headline2");
+    injectLineTools("sogotvModel", "sogotv.model");
+    injectLineTools("sogotvSpec", "sogotv.spec");
+    injectLineTools("sogotvPriceRow", "sogotv.price");
+    injectLineTools("sogotvSpecialRow", "sogotv.special");
     injectLineTools("compareModel", "compare.model");
     injectLineTools("compareOrigRow", "compare.origLine");
     injectLineTools("compareSpecialRow", "compare.specialLine");
@@ -1072,6 +1220,37 @@
       + '<div class="specs-headline"><p style="'+lineStyleAttr(s,"specs.headline1")+'">'+hl1+'</p><p class="sub" style="'+lineStyleAttr(s,"specs.headline2")+'">'+fmt(s.specsHeadline2)+'</p></div>'
       + '<hr class="specs-rule">'
       + '<div class="specs-rows">'+rowsHTML+'</div>'
+    + '</div>';
+  }
+
+  function buildSogoTv(s){
+    var logo = brandImgTag(s.sogotvBrand, s.sogotvBrandUpload, "sogotv-logo", s.sogotvLogoScale);
+    var hi = (s.sogotvHighlight||"").trim();
+    var lines = (s.sogotvHeadline||"").split("\n").map(function(l, idx){
+      if (!l || l.trim()==="") return "";
+      var h = esc(l);
+      if (hi !== ""){ var hiEsc = esc(hi); h = h.split(hiEsc).join('<span class="hl">'+hiEsc+'</span>'); }
+      h = h.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+      return '<p style="'+lineStyleAttr(s,"sogotv.headline."+idx)+'">'+h+'</p>';
+    }).join("");
+    var hasSpecial = String(s.sogotvSpecialPrice==null?"":s.sogotvSpecialPrice).trim() !== "";
+    var pricesHTML = hasSpecial
+      ? '<div class="sogotv-price has-special" style="'+lineStyleAttr(s,"sogotv.price")+'">'
+          + ((s.sogotvOrigLabel||"").trim() ? '<span class="lbl">'+fmt(s.sogotvOrigLabel)+'</span>' : '')
+          + esc(s.sogotvCurrency)+money(s.sogotvPrice)+'</div>'
+        + '<div class="sogotv-price special" style="'+lineStyleAttr(s,"sogotv.special")+'">'
+          + ((s.sogotvSpecialLabel||"").trim() ? '<span class="lbl">'+fmt(s.sogotvSpecialLabel)+'</span>' : '')
+          + esc(s.sogotvCurrency)+money(s.sogotvSpecialPrice)+'</div>'
+      : '<div class="sogotv-price" style="'+lineStyleAttr(s,"sogotv.price")+'">'+esc(s.sogotvCurrency)+money(s.sogotvPrice)+'</div>';
+    var modelHTML = (s.sogotvModel||"").trim() ? '<p class="sogotv-model" style="'+lineStyleAttr(s,"sogotv.model")+'">'+fmt(s.sogotvModel)+'</p>' : "";
+    return '<div class="cardface sogotv" style="--accent:'+esc(s.sogotvAccent)+';--lhmul:'+(s.lineHeightScale||1)+';--fontscale:'+(s.fontScale||1)+'">'
+      + logo
+      + '<div class="sogotv-headline">'+lines+'</div>'
+      + modelHTML
+      + '<div class="sogotv-bottom">'
+        + '<div class="sogotv-spec" style="'+lineStyleAttr(s,"sogotv.spec")+'">'+fmt(s.sogotvSpec||"").replace(/\n/g,"<br>")+'</div>'
+        + '<div class="sogotv-prices">'+pricesHTML+'</div>'
+      + '</div>'
     + '</div>';
   }
 
@@ -1212,6 +1391,7 @@
     if (s.template==="specs") return buildSpecs(s);
     if (s.template==="dome") return buildDome(s);
     if (s.template==="taimall") return buildTaimall(s);
+    if (s.template==="sogotv") return buildSogoTv(s);
     return buildCompare(s);
   }
 
@@ -1366,6 +1546,20 @@
     return {cols:cols, rows:rows, cap:cols*rows};
   }
 
+  // 天母SOGO 10×7 電視卡：頁邊縮小、整組置中，一頁排 2 欄 × 4 列＝8 張（一般 1cm 頁邊只放得下 3 張）
+  var COMPACT_MARGIN = 0.4; // cm，A4 左右至少留這麼多
+  function compactGrid(c, gap){
+    if (!c || c.template !== "sogotv") return null;
+    var w = c.size.w, h = c.size.h, m = COMPACT_MARGIN;
+    if (!(w>0 && h>0)) return null;
+    var cols = Math.floor((21 - m*2 + gap + 0.001) / (w + gap));
+    var rows = Math.floor((29.7 - m*2 + gap + 0.001) / (h + gap));
+    if (cols<1 || rows<1) return null;
+    var gw = cols*w + (cols-1)*gap, gh = rows*h + (rows-1)*gap;
+    return {cols:cols, rows:rows, cap:cols*rows,
+      x:Math.round((21-gw)/2*1000)/1000, y:Math.round((29.7-gh)/2*1000)/1000};
+  }
+
   // Packs every printed instance (each card x its copies) into A4 pages, wrapping rows/pages
   // the same way the print layout will, so the on-screen preview is what actually prints.
   // 回傳 page 物件陣列：{tile:是否無邊界拼版, cols, cap, items:[...]}
@@ -1383,10 +1577,12 @@
     function startNormal(){ normalPage = {tile:false, items:[]}; pages.push(normalPage); x=0; y=0; rowH=0; tilePage=null; }
     items.forEach(function(it){
       var g = a4TileGrid(it.card);
-      if (g){
-        var key = it.card.size.w+"x"+it.card.size.h;
+      var cg = g ? null : compactGrid(it.card, gap);
+      if (g || cg){
+        var key = (g ? "tile:" : "compact:")+it.card.size.w+"x"+it.card.size.h;
         if (!tilePage || tileKey!==key || tilePage.items.length >= tilePage.cap){
-          tilePage = {tile:true, cols:g.cols, cap:g.cap, items:[]};
+          tilePage = g ? {tile:true, cols:g.cols, cap:g.cap, items:[]}
+            : {tile:false, compact:true, cols:cg.cols, cap:cg.cap, inset:{x:cg.x, y:cg.y}, items:[]};
           tileKey = key; pages.push(tilePage); normalPage = null;
         }
         tilePage.items.push(it);
@@ -1416,7 +1612,9 @@
         return '<div class="'+cls+'" data-card-idx="'+it.cardIndex+'" style="width:'+c.size.w+'cm;height:'+c.size.h+'cm;">'+buildCardInner(c)+'</div>';
       }).join("");
       var innerCls = "a4-inner" + (fullBleed ? " full-bleed" : "") + (page.tile ? " a4-tile" : "");
-      var innerStyle = fullBleed ? "" : ' style="gap:'+pageGap+'cm"';
+      var innerStyle = fullBleed ? ""
+        : page.compact ? ' style="inset:'+page.inset.y+'cm '+page.inset.x+'cm;gap:'+pageGap+'cm"'
+        : ' style="gap:'+pageGap+'cm"';
       return '<div class="a4-sheet"><div class="'+innerCls+'"'+innerStyle+'>'+inner+'</div></div>';
     }).join("");
     document.getElementById("previewPages").innerHTML = html;
@@ -1438,13 +1636,15 @@
 
   /* ---------- card deck management ---------- */
   function cardLabel(c){
-    var tplName = c.template==="combo" ? "組合卡" : c.template==="specs" ? "規格表" :
+    var tplName = c.template==="combo" ? "天母組合卡" : c.template==="specs" ? "天母規格表" :
+      c.template==="sogotv" ? "天母電視卡" :
       c.template==="dome" ? "大巨蛋卡" : c.template==="taimall" ? "台茂特賣卡" : "台茂價格卡";
     var text = "";
     if (c.template==="combo") text = c.comboHeadline;
     else if (c.template==="specs") text = c.specsHeadline1;
     else if (c.template==="dome") text = (c.domeHeadline||"").split("\n")[0];
     else if (c.template==="taimall") text = (c.taimallName||"").split("\n")[0];
+    else if (c.template==="sogotv") text = (c.sogotvHeadline||"").split("\n")[0];
     else text = (c.compareLines||"").split("\n")[0];
     text = (text||"").replace(/\*\*/g,"").trim();
     return tplName + (text ? "｜"+text : "");
@@ -1484,6 +1684,18 @@
     var copy = clone(deck.cards[idx]);
     deck.cards.splice(idx+1, 0, copy);
     selectCard(idx+1);
+  }
+
+  // 把 idx 這張設為 1 份，並在它後面插入複製卡，直到它所在的 A4（拼版／10×7 置中排版）排滿；回傳新增張數
+  function addCardsToFillPage(idx){
+    deck.cards[idx].copies = 1;
+    var page = buildPages().filter(function(p){
+      return p.items.some(function(it){ return it.cardIndex === idx; });
+    })[0];
+    if (!page || !page.cap) return 0;
+    var room = Math.min(page.cap - page.items.length, MAX_CARDS - deck.cards.length);
+    for (var i=0; i<room; i++) deck.cards.splice(idx+1, 0, clone(deck.cards[idx]));
+    return Math.max(0, room);
   }
 
   function removeCard(idx){
@@ -1665,11 +1877,31 @@
     syncLineTools();
   }
 
+  /* ---------- 天母SOGO 電視卡 per-line tools (mirrors headline textarea) ---------- */
+  function renderSogoTvLineTools(){
+    var box = document.getElementById("sogotvHeadlineTools");
+    var lines = (state.sogotvHeadline||"").split("\n");
+    box.innerHTML = lines.map(function(l, idx){
+      if (!l || l.trim()==="") return "";
+      var label = l.replace(/\*\*/g,"").trim();
+      if (label.length > 14) label = label.slice(0,14)+"…";
+      return '<div class="linetool-row">'
+        + '<span class="linetool-label">第'+(idx+1)+'行：'+esc(label)+'</span>'
+        + lineToolsHTML("sogotv.headline."+idx)
+      + '</div>';
+    }).join("");
+    syncLineTools();
+  }
+
   /* ---------- populate form from state ---------- */
   function populateForm(){
+    var sogo = isSogoTemplate(state.template);
     document.querySelectorAll("#templateTabs button").forEach(function(btn){
-      btn.classList.toggle("active", btn.dataset.tpl === state.template);
+      btn.classList.toggle("active", btn.dataset.group === "sogo" ? sogo : btn.dataset.tpl === state.template);
     });
+    document.getElementById("formSogo").classList.toggle("hidden", !sogo);
+    document.getElementById("sogoLayout").value = state.template;
+    document.getElementById("formSogoTv").classList.toggle("hidden", state.template!=="sogotv");
     document.getElementById("formCombo").classList.toggle("hidden", state.template!=="combo");
     document.getElementById("formSpecs").classList.toggle("hidden", state.template!=="specs");
     document.getElementById("formCompare").classList.toggle("hidden", state.template!=="compare");
@@ -1677,8 +1909,10 @@
     document.getElementById("formTaimall").classList.toggle("hidden", state.template!=="taimall");
 
     fillSizePresetOptions();
+    document.getElementById("fitPageBtn").textContent = state.template === "sogotv" ? "新增卡片補滿A4" : "此張填滿A4";
     // 大巨蛋門市卡尺寸由底圖決定、台茂特賣會固定 A4 滿版：隱藏「尺寸預設」下拉避免門市選錯（寬高仍可手動微調）
-    document.getElementById("sizePresetRow").classList.toggle("hidden", state.template === "dome" || state.template === "taimall");
+    // 天母SOGO 的尺寸由「版面」決定，同樣隱藏
+    document.getElementById("sizePresetRow").classList.toggle("hidden", state.template === "dome" || state.template === "taimall" || sogo);
     document.getElementById("sizeW").value = state.size.w;
     document.getElementById("sizeH").value = state.size.h;
     var presetMatch = Object.keys(SIZE_PRESETS).filter(function(k){
@@ -1750,6 +1984,21 @@
       document.getElementById("domeDim").value = state.domeDim || "";
       document.getElementById("domeAccent").value = state.domeAccent;
       document.getElementById("domeRowShade").value = state.domeRowShade || "#ece5da";
+    } else if (state.template==="sogotv"){
+      fillBrandSelect(document.getElementById("sogotvBrand"), state.sogotvBrand);
+      document.getElementById("sogotvLogoScale").value = state.sogotvLogoScale || 1;
+      document.getElementById("sogotvLogoScaleVal").textContent = Math.round((state.sogotvLogoScale||1)*100)+"%";
+      document.getElementById("sogotvHeadline").value = state.sogotvHeadline || "";
+      renderSogoTvLineTools();
+      document.getElementById("sogotvHighlight").value = state.sogotvHighlight || "";
+      document.getElementById("sogotvModel").value = state.sogotvModel || "";
+      document.getElementById("sogotvSpec").value = state.sogotvSpec || "";
+      document.getElementById("sogotvCurrency").value = state.sogotvCurrency || "";
+      document.getElementById("sogotvPrice").value = state.sogotvPrice || "";
+      document.getElementById("sogotvOrigLabel").value = state.sogotvOrigLabel != null ? state.sogotvOrigLabel : "原價";
+      document.getElementById("sogotvSpecialLabel").value = state.sogotvSpecialLabel != null ? state.sogotvSpecialLabel : "特價";
+      document.getElementById("sogotvSpecialPrice").value = state.sogotvSpecialPrice || "";
+      document.getElementById("sogotvAccent").value = state.sogotvAccent || "#9b2f28";
     } else if (state.template==="taimall"){
       fillBrandSelect(document.getElementById("taimallBrand"), state.taimallBrand);
       document.getElementById("taimallLogoScale").value = state.taimallLogoScale || 1;
@@ -1794,7 +2043,19 @@
       if (!btn) return;
       var tpl = btn.dataset.tpl;
       if (tpl === state.template) return;
+      if (btn.dataset.group === "sogo" && isSogoTemplate(state.template)) return;
       var fresh = clone(DEFAULTS[tpl]);
+      deck.cards[activeIndex] = fresh;
+      state = fresh;
+      populateForm();
+      renderCard();
+    });
+
+    document.getElementById("sogoLayout").addEventListener("change", function(){
+      var tpl = this.value;
+      if (!isSogoTemplate(tpl) || tpl === state.template) return;
+      var fresh = clone(DEFAULTS[tpl]);
+      fresh.copies = state.copies;
       deck.cards[activeIndex] = fresh;
       state = fresh;
       populateForm();
@@ -1821,6 +2082,13 @@
     });
 
     document.getElementById("addCardBtn").addEventListener("click", addCard);
+    document.getElementById("saveDeckBtn").addEventListener("click", saveDeckToFile);
+    document.getElementById("openDeckBtn").addEventListener("click", function(){ document.getElementById("openDeckFile").click(); });
+    document.getElementById("openDeckFile").addEventListener("change", function(){
+      var f = this.files[0]; if (!f) return;
+      openDeckFromFile(f);
+      this.value = ""; // 同一個檔案可以再選一次
+    });
     document.getElementById("cardList").addEventListener("click", function(e){
       var dup = e.target.closest(".card-item-dup");
       var del = e.target.closest(".card-item-del");
@@ -1876,7 +2144,14 @@
       state.cutGuides = this.checked; renderCard();
     });
     document.getElementById("fitPageBtn").addEventListener("click", function(){
-      var tile = a4TileGrid(state);
+      // 10×7 電視卡：補滿這一頁要的是「不同」價格牌，所以新增卡片（複製目前這張，再逐張改內容），而不是重複份數
+      if (state.template === "sogotv"){
+        addCardsToFillPage(activeIndex);
+        populateForm();
+        renderCard();
+        return;
+      }
+      var tile = a4TileGrid(state) || compactGrid(state, pageGap);
       if (tile){
         state.copies = tile.cap;
       } else {
@@ -1970,6 +2245,28 @@
     });
     document.getElementById("specsAccent").addEventListener("input", function(){ state.specsAccent=this.value; renderCard(); });
     document.getElementById("specsRowShade").addEventListener("input", function(){ state.specsRowShade=this.value; renderCard(); });
+
+    /* ---- 天母SOGO 電視卡 ---- */
+    document.getElementById("sogotvBrand").addEventListener("change", function(){ state.sogotvBrand=this.value; renderCard(); });
+    document.getElementById("sogotvBrandUpload").addEventListener("change", function(){
+      var f=this.files[0]; if(!f) return;
+      fileToDataUrl(f, function(url){ state.sogotvBrandUpload=url; renderCard(); });
+    });
+    document.getElementById("sogotvLogoScale").addEventListener("input", function(){
+      state.sogotvLogoScale = parseFloat(this.value) || 1;
+      document.getElementById("sogotvLogoScaleVal").textContent = Math.round(state.sogotvLogoScale*100)+"%";
+      renderCard();
+    });
+    document.getElementById("sogotvHeadline").addEventListener("input", function(){ state.sogotvHeadline=this.value; renderSogoTvLineTools(); renderCard(); });
+    document.getElementById("sogotvHighlight").addEventListener("input", function(){ state.sogotvHighlight=this.value; renderCard(); });
+    document.getElementById("sogotvModel").addEventListener("input", function(){ state.sogotvModel=this.value; renderCard(); });
+    document.getElementById("sogotvSpec").addEventListener("input", function(){ state.sogotvSpec=this.value; renderCard(); });
+    document.getElementById("sogotvCurrency").addEventListener("input", function(){ state.sogotvCurrency=this.value; renderCard(); });
+    document.getElementById("sogotvPrice").addEventListener("input", function(){ state.sogotvPrice=this.value; renderCard(); });
+    document.getElementById("sogotvOrigLabel").addEventListener("input", function(){ state.sogotvOrigLabel=this.value; renderCard(); });
+    document.getElementById("sogotvSpecialLabel").addEventListener("input", function(){ state.sogotvSpecialLabel=this.value; renderCard(); });
+    document.getElementById("sogotvSpecialPrice").addEventListener("input", function(){ state.sogotvSpecialPrice=this.value; renderCard(); });
+    document.getElementById("sogotvAccent").addEventListener("input", function(){ state.sogotvAccent=this.value; renderCard(); });
 
     /* ---- compare ---- */
     document.getElementById("compareShowLogo").addEventListener("change", function(){ state.compareShowLogo=this.checked; renderCard(); });
@@ -2152,6 +2449,20 @@
     bindStatic();
     populateForm();
     renderCard();
+  }
+
+  // 只給 tests/ 自動測試用：一般瀏覽器不會設定 __PTG_TEST__，這段不會執行
+  if (window.__PTG_TEST__){
+    window.__PTG_TEST__ = {
+      DEFAULTS:DEFAULTS, STORAGE_KEY:STORAGE_KEY,
+      loadDeck:loadDeck, normalizeDeck:normalizeDeck, deckFileData:deckFileData, deckFileName:deckFileName,
+      matchBrandId:matchBrandId, splitTaimallIntro:splitTaimallIntro,
+      cleanTaimallPrice:cleanTaimallPrice, parseTaimallWorkbook:parseTaimallWorkbook,
+      a4TileGrid:a4TileGrid, compactGrid:compactGrid, buildPages:buildPages,
+      addCardsToFillPage:addCardsToFillPage, getDeck:function(){ return deck; },
+      setDeck:function(cards, gap){ deck = {cards:cards}; if (typeof gap === "number") pageGap = gap; }
+    };
+    return;
   }
 
   document.addEventListener("DOMContentLoaded", init);
