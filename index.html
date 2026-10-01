@@ -345,7 +345,7 @@
       </div>
       <div class="row2">
         <label class="field"><span class="lbl">此張列印份數</span><input type="number" id="copies" min="1" max="120" value="1"></label>
-        <label class="field" style="align-self:end;"><button type="button" class="btn" id="fitPageBtn" style="width:100%;">此張填滿A4</button></label>
+        <label class="field" style="align-self:end;"><button type="button" class="btn" id="fitPageBtn" style="width:100%;">新增卡片補滿A4</button></label>
       </div>
       <label class="inline" style="margin-top:4px;">
         <input type="checkbox" id="cutGuides"> <span class="tiny">顯示裁切線（列印時為淡灰虛線）</span>
@@ -1686,16 +1686,29 @@
     selectCard(idx+1);
   }
 
-  // 把 idx 這張設為 1 份，並在它後面插入複製卡，直到它所在的 A4（拼版／10×7 置中排版）排滿；回傳新增張數
+  // 一般尺寸（非拼版、非 10×7 置中排版）一頁放得下幾張：用跟「填滿A4」原本一樣的可用寬高公式估算
+  function normalPageCapacity(c){
+    var margin = 1.0, gap = pageGap;
+    var usableW = 21 - margin*2, usableH = 29.7 - margin*2;
+    var cols = Math.max(1, Math.floor((usableW + gap) / (c.size.w + gap)));
+    var rows = Math.max(1, Math.floor((usableH + gap) / (c.size.h + gap)));
+    return cols*rows;
+  }
+
+  // 把 idx 這張設為 1 份，並在它後面插入複製卡，直到它所在的 A4 排滿；回傳新增張數。
+  // 每個版型都適用：拼版（台茂）、10×7 置中排版（天母電視卡）、或一般尺寸都算出一頁的容量，
+  // 用「新增可各自編輯的卡片」取代單純增加同一張卡的份數。
   function addCardsToFillPage(idx){
     deck.cards[idx].copies = 1;
     var page = buildPages().filter(function(p){
       return p.items.some(function(it){ return it.cardIndex === idx; });
     })[0];
-    if (!page || !page.cap) return 0;
-    var room = Math.min(page.cap - page.items.length, MAX_CARDS - deck.cards.length);
+    var cap = (page && (page.tile || page.compact)) ? page.cap : normalPageCapacity(deck.cards[idx]);
+    if (!cap) return 0;
+    var already = page ? page.items.length : 1;
+    var room = Math.min(Math.max(0, cap - already), MAX_CARDS - deck.cards.length);
     for (var i=0; i<room; i++) deck.cards.splice(idx+1, 0, clone(deck.cards[idx]));
-    return Math.max(0, room);
+    return room;
   }
 
   function removeCard(idx){
@@ -1909,7 +1922,6 @@
     document.getElementById("formTaimall").classList.toggle("hidden", state.template!=="taimall");
 
     fillSizePresetOptions();
-    document.getElementById("fitPageBtn").textContent = state.template === "sogotv" ? "新增卡片補滿A4" : "此張填滿A4";
     // 大巨蛋門市卡尺寸由底圖決定、台茂特賣會固定 A4 滿版：隱藏「尺寸預設」下拉避免門市選錯（寬高仍可手動微調）
     // 天母SOGO 的尺寸由「版面」決定，同樣隱藏
     document.getElementById("sizePresetRow").classList.toggle("hidden", state.template === "dome" || state.template === "taimall" || sogo);
@@ -2144,24 +2156,9 @@
       state.cutGuides = this.checked; renderCard();
     });
     document.getElementById("fitPageBtn").addEventListener("click", function(){
-      // 10×7 電視卡：補滿這一頁要的是「不同」價格牌，所以新增卡片（複製目前這張，再逐張改內容），而不是重複份數
-      if (state.template === "sogotv"){
-        addCardsToFillPage(activeIndex);
-        populateForm();
-        renderCard();
-        return;
-      }
-      var tile = a4TileGrid(state) || compactGrid(state, pageGap);
-      if (tile){
-        state.copies = tile.cap;
-      } else {
-        var gap = pageGap, margin = 1.0;
-        var usableW = 21 - margin*2, usableH = 29.7 - margin*2;
-        var cols = Math.max(1, Math.floor((usableW + gap) / (state.size.w + gap)));
-        var rows = Math.max(1, Math.floor((usableH + gap) / (state.size.h + gap)));
-        state.copies = cols*rows;
-      }
-      document.getElementById("copies").value = state.copies;
+      // 補滿這一頁要的是「不同」價格牌，所以新增卡片（複製目前這張，再逐張改內容），而不是重複份數
+      addCardsToFillPage(activeIndex);
+      populateForm();
       renderCard();
     });
     document.getElementById("zoom").addEventListener("input", applyZoom);

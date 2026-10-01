@@ -333,6 +333,21 @@ test("addCardsToFillPage：10×7 補滿 A4 是新增 7 張可各自編輯的卡�
   assert.equal(app.addCardsToFillPage(1), 0);
 });
 
+test("addCardsToFillPage：一般尺寸（不是拼版也不是 10×7）同樣新增可各自編輯的卡，而非只改份數", () => {
+  const app = loadApp();
+  // 7×4 一般排版一頁放 2 欄 × 6 列 = 12 張（見上面的 buildPages 測試）
+  app.setDeck([cardOf(7, 4, 5)], 0.2);
+  assert.equal(app.addCardsToFillPage(0), 11);
+  const cards = app.getDeck().cards;
+  assert.equal(cards.length, 12);
+  assert.deepEqual(cards.map(c => c.copies), Array(12).fill(1));
+  assert.notEqual(cards[0], cards[1], "新增的應是獨立物件，改一張不影響另一張");
+  const pages = plain(app.buildPages());
+  assert.deepEqual(pages.map(p => p.items.length), [12]);
+  // 已經滿了再按不會多加
+  assert.equal(app.addCardsToFillPage(0), 0);
+});
+
 /* ---------------- 儲存清單成檔案 / 開啟清單檔案 ---------------- */
 
 test("儲存清單：下載的檔案內容再開啟，清單、選取、間距完整還原", () => {
