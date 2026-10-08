@@ -1801,8 +1801,8 @@
     return {cols:cols, rows:rows, cap:cols*rows};
   }
 
-  // 天母SOGO 10×7 電視卡：頁邊縮小、整組置中，一頁排 2 欄 × 4 列＝8 張（一般 1cm 頁邊只放得下 3 張）
-  var COMPACT_MARGIN = 0.4; // cm，A4 左右至少留這麼多
+  // 天母SOGO 10×7 電視卡：頁邊縮小、靠左上對齊，一頁排 2 欄 × 4 列＝8 張（一般 1cm 頁邊只放得下 3 張）
+  var COMPACT_MARGIN = 0.4; // cm，靠左上角留這麼多邊界（跟其他版型的排版方式一致）
   function compactGrid(c, gap){
     if (!c || c.template !== "sogotv") return null;
     var w = c.size.w, h = c.size.h, m = COMPACT_MARGIN;
@@ -1812,7 +1812,7 @@
     if (cols<1 || rows<1) return null;
     var gw = cols*w + (cols-1)*gap, gh = rows*h + (rows-1)*gap;
     return {cols:cols, rows:rows, cap:cols*rows,
-      x:Math.round((21-gw)/2*1000)/1000, y:Math.round((29.7-gh)/2*1000)/1000};
+      x:m, y:m, w:Math.round(gw*1000)/1000, h:Math.round(gh*1000)/1000};
   }
 
   // Packs every printed instance (each card x its copies) into A4 pages, wrapping rows/pages
@@ -1837,7 +1837,7 @@
         var key = (g ? "tile:" : "compact:")+it.card.size.w+"x"+it.card.size.h;
         if (!tilePage || tileKey!==key || tilePage.items.length >= tilePage.cap){
           tilePage = g ? {tile:true, cols:g.cols, cap:g.cap, items:[]}
-            : {tile:false, compact:true, cols:cg.cols, cap:cg.cap, inset:{x:cg.x, y:cg.y}, items:[]};
+            : {tile:false, compact:true, cols:cg.cols, cap:cg.cap, inset:{x:cg.x, y:cg.y, w:cg.w, h:cg.h}, items:[]};
           tileKey = key; pages.push(tilePage); normalPage = null;
         }
         tilePage.items.push(it);
@@ -1868,7 +1868,7 @@
       }).join("");
       var innerCls = "a4-inner" + (fullBleed ? " full-bleed" : "") + (page.tile ? " a4-tile" : "");
       var innerStyle = fullBleed ? ""
-        : page.compact ? ' style="inset:'+page.inset.y+'cm '+page.inset.x+'cm;gap:'+pageGap+'cm"'
+        : page.compact ? ' style="top:'+page.inset.y+'cm;left:'+page.inset.x+'cm;width:'+page.inset.w+'cm;height:'+page.inset.h+'cm;gap:'+pageGap+'cm"'
         : ' style="gap:'+pageGap+'cm"';
       return '<div class="a4-sheet"><div class="'+innerCls+'"'+innerStyle+'>'+inner+'</div></div>';
     }).join("");

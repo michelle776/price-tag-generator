@@ -323,16 +323,16 @@ test("loadDeck：舊的 11×15 規格表存檔尺寸不被改動", () => {
   assert.deepEqual(plain(loadApp({ cards: [old] }).loadDeck().cards[0].size), { w: 11, h: 15 });
 });
 
-test("buildPages：10×7 電視卡縮小頁邊置中，一頁 2 欄 × 4 列＝8 張", () => {
+test("buildPages：10×7 電視卡縮小頁邊、靠左上對齊，一頁 2 欄 × 4 列＝8 張", () => {
   const app = loadApp();
   const tv = plain(app.DEFAULTS.sogotv);
   assert.equal(app.a4TileGrid(tv), null);
-  assert.deepEqual(plain(app.compactGrid(tv, 0.2)), { cols: 2, rows: 4, cap: 8, x: 0.4, y: 0.55 });
+  assert.deepEqual(plain(app.compactGrid(tv, 0.2)), { cols: 2, rows: 4, cap: 8, x: 0.4, y: 0.4, w: 20.2, h: 28.6 });
   app.setDeck([Object.assign({}, tv, { copies: 9 }), cardOf(7, 4), Object.assign({}, tv, { copies: 2 })], 0.2);
   const pages = plain(app.buildPages());
   assert.deepEqual(pages.map(p => [!!p.compact, p.items.map(i => i.cardIndex).length]),
     [[true, 8], [true, 1], [false, 1], [true, 2]]);
-  assert.deepEqual(pages[0].inset, { x: 0.4, y: 0.55 });
+  assert.deepEqual(pages[0].inset, { x: 0.4, y: 0.4, w: 20.2, h: 28.6 });
 });
 
 test("compactGrid：間距調大放不下兩欄時自動變一欄；其他版型不套用", () => {
