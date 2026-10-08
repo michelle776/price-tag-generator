@@ -294,12 +294,15 @@ test("天母SOGO：組合卡 15×10、規格價目表 10.8×15、小張電視價
 
 /* ---------------- 忠孝SOGO 門市卡 ---------------- */
 
-test("忠孝SOGO：預設 12×8cm、底圖版型預設 12x8", () => {
+test("忠孝SOGO：預設 12×8cm、底圖版型預設 12x8，含規格價目表式（A4）用的欄位", () => {
   const app = loadApp();
   const zx = plain(app.DEFAULTS.zhongxiao);
   assert.equal(zx.template, "zhongxiao");
   assert.deepEqual(zx.size, { w: 12, h: 8 });
   assert.equal(zx.zhongxiaoBg, "12x8");
+  assert.deepEqual(zx.zhongxiaoTableRows, []);
+  assert.equal(zx.zhongxiaoTableCurrency, "");
+  assert.equal(zx.zhongxiaoRowShade, "#ece5da");
 });
 
 test("addCardsToFillPage：忠孝SOGO 12×8（一般排版、非拼版）同樣新增獨立卡片補滿頁面", () => {

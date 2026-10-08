@@ -626,7 +626,7 @@
           <select id="zhongxiaoBg">
             <option value="12x8">12 × 8 cm 版面</option>
             <option value="7x4">7 × 4 cm 版面（小價格牌）</option>
-            <option value="A4">A4 版面</option>
+            <option value="A4">A4 版面（規格價目表式）</option>
           </select>
         </label>
       </fieldset>
@@ -649,10 +649,16 @@
         <label class="field"><span class="lbl">標題中要強調的文字（會套用強調色，選用）</span><input type="text" id="zhongxiaoHighlight"></label>
         <label class="field"><span class="lbl">副標（型號 / 顏色，選用，較小灰字）</span><input type="text" id="zhongxiaoSub"></label>
       </fieldset>
-      <fieldset>
+      <fieldset id="zhongxiaoRowsFieldset">
         <legend>價格列</legend>
         <div class="listbox" id="zhongxiaoRowsList"></div>
         <button type="button" class="btn-add" id="zhongxiaoAddRow">+ 新增一列價格</button>
+      </fieldset>
+      <fieldset id="zhongxiaoTableFieldset">
+        <legend>規格 / 價格列（規格價目表式）</legend>
+        <label class="field"><span class="lbl">價格前綴（選用，預設留空、以每行「單位」當後綴如「元」）</span><input type="text" id="zhongxiaoTableCurrency" placeholder="例：NT $"></label>
+        <div class="listbox" id="zhongxiaoTableRowsList"></div>
+        <button type="button" class="btn-add" id="zhongxiaoTableAddRow">+ 新增一列</button>
       </fieldset>
       <fieldset>
         <legend>最下方備註（選用）</legend>
@@ -661,6 +667,7 @@
       <fieldset>
         <legend>顏色</legend>
         <label class="field"><span class="lbl">強調色（勾選「特價／強調」的列會套用此色）</span><input type="color" id="zhongxiaoAccent"></label>
+        <label class="field"><span class="lbl">隔行底色（規格價目表式專用）</span><input type="color" id="zhongxiaoRowShade"></label>
       </fieldset>
     </div>
   </aside>
@@ -943,13 +950,14 @@
       template:"zhongxiao",
       size:{w:12,h:8}, copies:1, cutGuides:true,
       zhongxiaoBg:"12x8",
-      zhongxiaoBrand:"dynaudio", zhongxiaoBrandUpload:"", zhongxiaoLogoScale:1, zhongxiaoLogoAlign:"center", lineHeightScale:1, fontScale:1,
+      zhongxiaoBrand:"dynaudio", zhongxiaoBrandUpload:"", zhongxiaoLogoScale:0.6, zhongxiaoLogoAlign:"center", lineHeightScale:1, fontScale:1,
       zhongxiaoHeadline:"Focus 20 XD 主動式喇叭",
       zhongxiaoHighlight:"",
       zhongxiaoSub:"胡桃木",
       zhongxiaoRows:[
         {label:"建議售價", value:"168,000", unit:"元", highlight:false}
       ],
+      zhongxiaoTableRows:[], zhongxiaoTableCurrency:"", zhongxiaoRowShade:"#ece5da",
       zhongxiaoDim:"",
       zhongxiaoAccent:"#d3311f",
       lineStyles:{
@@ -996,7 +1004,7 @@
   };
   var ZHONGXIAO_SAMPLES = {
     "12x8": {
-      zhongxiaoBrand:"dynaudio", zhongxiaoBrandUpload:"",
+      zhongxiaoBrand:"dynaudio", zhongxiaoBrandUpload:"", zhongxiaoLogoScale:0.6,
       zhongxiaoHeadline:"Focus 20 XD 主動式喇叭",
       zhongxiaoSub:"胡桃木",
       zhongxiaoRows:[
@@ -1009,7 +1017,7 @@
       }
     },
     "7x4": {
-      zhongxiaoBrand:"audiotechnica", zhongxiaoBrandUpload:"",
+      zhongxiaoBrand:"audiotechnica", zhongxiaoBrandUpload:"", zhongxiaoLogoScale:0.6,
       zhongxiaoHeadline:"ATH-M50xBT2 耳罩式藍牙耳機",
       zhongxiaoSub:"經典黑",
       zhongxiaoRows:[
@@ -1019,18 +1027,26 @@
       lineStyles:{}
     },
     "A4": {
-      zhongxiaoBrand:"bw", zhongxiaoBrandUpload:"",
-      zhongxiaoHeadline:"703 S2 落地式喇叭（一對）",
-      zhongxiaoSub:"緞光白",
-      zhongxiaoRows:[
-        {label:"建議售價", value:"371,000", unit:"元", highlight:false},
-        {label:"特價", value:"315,000", unit:"元", highlight:true}
+      zhongxiaoBrand:"lg-color", zhongxiaoBrandUpload:"", zhongxiaoLogoScale:1, zhongxiaoLogoAlign:"left",
+      zhongxiaoHeadline:"OLED evo AI 4K 顯示器 C4系列",
+      zhongxiaoHighlight:"C4",
+      zhongxiaoSub:"",
+      zhongxiaoRows:[],
+      zhongxiaoTableRows:[
+        {name:"55吋 OLED55C4PSA", spec:"4K OLED evo 面板｜α9 AI 處理器 Gen7｜120Hz 更新率", prices:[{label:"建議售價", value:"69,900", unit:"元", highlight:false}]},
+        {name:"65吋 OLED65C4PSA", spec:"4K OLED evo 面板｜α9 AI 處理器 Gen7｜120Hz 更新率", prices:[{label:"建議售價", value:"89,900", unit:"元", highlight:false}]},
+        {name:"77吋 OLED77C4PSA", spec:"4K OLED evo 面板｜α9 AI 處理器 Gen7｜120Hz 更新率", prices:[{label:"建議售價", value:"169,900", unit:"元", highlight:false}]}
       ],
+      zhongxiaoTableCurrency:"",
+      zhongxiaoRowShade:"#ece5da",
       zhongxiaoDim:"",
       lineStyles:{
-        "zhongxiao.headline":{fontScale:1.3, dx:0, dy:0},
-        "zhongxiao.sub":{fontScale:1.6, dx:0, dy:0},
-        "zhongxiao.row.1":{fontScale:1.2, dx:0, dy:0}
+        "zhongxiao.table.0.name":{fontScale:1.1, dx:0, dy:0},
+        "zhongxiao.table.0.spec":{fontScale:1.45, dx:0, dy:1.5},
+        "zhongxiao.table.1.name":{fontScale:1.1, dx:0, dy:0},
+        "zhongxiao.table.1.spec":{fontScale:1.45, dx:0, dy:1.5},
+        "zhongxiao.table.2.name":{fontScale:1.1, dx:0, dy:0},
+        "zhongxiao.table.2.spec":{fontScale:1.45, dx:0, dy:1.5}
       }
     }
   };
@@ -1046,9 +1062,13 @@
         state.zhongxiaoHighlight = sample.zhongxiaoHighlight || "";
         state.zhongxiaoSub = sample.zhongxiaoSub;
         state.zhongxiaoRows = sample.zhongxiaoRows ? clone(sample.zhongxiaoRows) : [];
+        state.zhongxiaoTableRows = sample.zhongxiaoTableRows ? clone(sample.zhongxiaoTableRows) : [];
+        state.zhongxiaoTableCurrency = (sample.zhongxiaoTableCurrency != null ? sample.zhongxiaoTableCurrency : "");
+        state.zhongxiaoRowShade = sample.zhongxiaoRowShade || "#ece5da";
         state.zhongxiaoDim = sample.zhongxiaoDim || "";
         if (sample.zhongxiaoAccent) state.zhongxiaoAccent = sample.zhongxiaoAccent;
         if (sample.zhongxiaoLogoScale) state.zhongxiaoLogoScale = sample.zhongxiaoLogoScale;
+        if (sample.zhongxiaoLogoAlign) state.zhongxiaoLogoAlign = sample.zhongxiaoLogoAlign;
         state.lineStyles = sample.lineStyles ? clone(sample.lineStyles) : {};
       }
     }
@@ -1554,21 +1574,56 @@
     var subHTML = (s.zhongxiaoSub||"").trim() ? '<p class="dome-sub" style="'+lineStyleAttr(s,"zhongxiao.sub")+'">'+fmt(s.zhongxiaoSub)+'</p>' : "";
     var dimHTML = (s.zhongxiaoDim||"").trim() ? '<p class="dome-dim" style="'+lineStyleAttr(s,"zhongxiao.dim")+'">'+fmt(s.zhongxiaoDim)+'</p>' : "";
     var bgFile = ZHONGXIAO_BG[s.zhongxiaoBg] || ZHONGXIAO_BG["12x8"];
+    var isTable = s.zhongxiaoBg === "A4";
     var stacked = s.zhongxiaoBg !== "7x4";
-    var bottomPad = s.zhongxiaoBg === "7x4" ? "10cqw" : s.zhongxiaoBg === "A4" ? "11cqw" : "12cqw";
-    var cardStyle = "background-image:url('"+bgFile+"');--accent:"+esc(s.zhongxiaoAccent)+";--lhmul:"+(s.lineHeightScale||1)+";--fontscale:"+(s.fontScale||1)+";--zx-bottompad:"+bottomPad;
-    var rowsHTML = (s.zhongxiaoRows||[]).map(function(r, i){
-      var hl = r.highlight ? " hl" : "";
-      return '<span class="dome-row" style="'+lineStyleAttr(s,"zhongxiao.row."+i)+'">'
-        + '<span class="dome-row-label'+hl+'">'+fmt(r.label)+'</span>'
-        + '<span class="dome-row-value'+hl+'">'+money(r.value)+'</span>'
-        + '<span class="dome-row-unit'+hl+'">'+fmt(r.unit)+'</span>'
-      + '</span>';
-    }).join("");
-    var bodyHTML = '<h1 class="dome-headline" style="'+lineStyleAttr(s,"zhongxiao.headline")+'">'+headlineHTML+'</h1>'
-      + subHTML
-      + '<div class="dome-rows '+(stacked?'stacked ':'')+logoAlign+'">'+rowsHTML+'</div>'
-      + dimHTML;
+    var bottomPad = s.zhongxiaoBg === "7x4" ? "17cqw" : s.zhongxiaoBg === "A4" ? "11cqw" : "20cqw";
+    var cardStyle = "background-image:url('"+bgFile+"');--accent:"+esc(s.zhongxiaoAccent)+";--rowshade:"+esc(s.zhongxiaoRowShade||"#ece5da")+";--lhmul:"+(s.lineHeightScale||1)+";--fontscale:"+(s.fontScale||1)+";--zx-bottompad:"+bottomPad;
+
+    var bodyHTML;
+    if (isTable){
+      // 規格價目表式：多列「名稱/規格 + 價格」，重用 .specs-row 系列樣式（與大巨蛋 A4 相同）
+      var tableRowsHTML = (s.zhongxiaoTableRows||[]).map(function(r, i){
+        var specHtml = fmt(r.spec||"").replace(/\n/g,"<br>");
+        var currency = esc(s.zhongxiaoTableCurrency||"");
+        var pricesHTML = ensureRowPrices(r).map(function(p, pi){
+          var val = (p.value!=null?String(p.value):"").trim();
+          var lbl = (p.label!=null?String(p.label):"").trim();
+          if (val==="" && lbl==="") return "";
+          var unit = (p.unit!=null?String(p.unit):"").trim();
+          return '<span class="dtp-line'+(p.highlight?' red-price':'')+'" style="'+lineStyleAttr(s,"zhongxiao.table."+i+".price."+pi)+'">'
+            + (lbl?fmt(p.label)+' ':'')
+            + currency + money(p.value)
+            + (unit?' '+fmt(p.unit):'')
+          + '</span>';
+        }).join("");
+        return '<div class="specs-row '+(i%2===1?'alt':'')+'">'
+          + '<div class="specs-row-text">'
+            + '<div class="specs-row-name" style="'+lineStyleAttr(s,"zhongxiao.table."+i+".name")+'">'+fmt(r.name)+'</div>'
+            + '<div class="specs-row-spec" style="'+lineStyleAttr(s,"zhongxiao.table."+i+".spec")+'">'+specHtml+'</div>'
+          + '</div>'
+          + '<div class="specs-row-price dome-table-price">'+pricesHTML+'</div>'
+        + '</div>';
+      }).join("");
+      bodyHTML = '<h1 class="dome-headline" style="'+lineStyleAttr(s,"zhongxiao.headline")+'">'+headlineHTML+'</h1>'
+        + subHTML
+        + '<hr class="specs-rule">'
+        + '<div class="specs-rows dome-table-rows">'+tableRowsHTML+'</div>'
+        + dimHTML;
+    } else {
+      var rowsHTML = (s.zhongxiaoRows||[]).map(function(r, i){
+        var hl = r.highlight ? " hl" : "";
+        return '<span class="dome-row" style="'+lineStyleAttr(s,"zhongxiao.row."+i)+'">'
+          + '<span class="dome-row-label'+hl+'">'+fmt(r.label)+'</span>'
+          + '<span class="dome-row-value'+hl+'">'+money(r.value)+'</span>'
+          + '<span class="dome-row-unit'+hl+'">'+fmt(r.unit)+'</span>'
+        + '</span>';
+      }).join("");
+      bodyHTML = '<h1 class="dome-headline" style="'+lineStyleAttr(s,"zhongxiao.headline")+'">'+headlineHTML+'</h1>'
+        + subHTML
+        + '<div class="dome-rows '+(stacked?'stacked ':'')+logoAlign+'">'+rowsHTML+'</div>'
+        + dimHTML;
+    }
+
     return '<div class="cardface zhongxiao" style="'+cardStyle+'">'
       + logoHTML
       + '<div class="dome-content '+logoAlign+'">'+bodyHTML+'</div>'
@@ -2054,6 +2109,36 @@
     syncLineTools();
   }
 
+  /* ---------- 忠孝SOGO 規格價目表式 table rows (A4) ---------- */
+  function renderZhongxiaoTableRows(){
+    var box = document.getElementById("zhongxiaoTableRowsList");
+    box.innerHTML = (state.zhongxiaoTableRows||[]).map(function(r, i){
+      var pricesHTML = ensureRowPrices(r).map(function(p, pi){
+        return '<div class="row-group dtp-group" data-idx="'+i+'" data-pidx="'+pi+'">'
+          + '<label class="field"><span class="lbl">標籤（售價／特價／會員價…）</span><input type="text" class="zx-tp-label-input" data-idx="'+i+'" data-pidx="'+pi+'" value="'+esc(p.label||"")+'"></label>'
+          + '<div class="row2">'
+            + '<label class="field"><span class="lbl">金額</span><input type="text" class="zx-tp-value-input" data-idx="'+i+'" data-pidx="'+pi+'" value="'+esc(p.value||"")+'"></label>'
+            + '<label class="field"><span class="lbl">單位（選用）</span><input type="text" class="zx-tp-unit-input" data-idx="'+i+'" data-pidx="'+pi+'" value="'+esc(p.unit||"")+'"></label>'
+          + '</div>'
+          + '<label class="inline"><input type="checkbox" class="zx-tp-highlight-input" data-idx="'+i+'" data-pidx="'+pi+'"'+(p.highlight?' checked':'')+'> <span class="tiny">特價／強調（套用強調色，字放大）</span></label>'
+          + lineToolsHTML("zhongxiao.table."+i+".price."+pi)
+          + '<button type="button" class="btn-remove zx-tp-remove" data-idx="'+i+'" data-pidx="'+pi+'" style="width:100%;margin-top:4px;">刪除此價格行</button>'
+        + '</div>';
+      }).join("");
+      return '<div class="row-group" data-idx="'+i+'">'
+        + '<label class="field"><span class="lbl">名稱 / 型號</span><input type="text" class="zx-table-name-input" data-idx="'+i+'" value="'+esc(r.name)+'"></label>'
+        + lineToolsHTML("zhongxiao.table."+i+".name")
+        + '<label class="field"><span class="lbl">規格說明（可分行）</span><textarea class="zx-table-spec-input" data-idx="'+i+'" rows="2">'+esc(r.spec)+'</textarea></label>'
+        + lineToolsHTML("zhongxiao.table."+i+".spec")
+        + '<div class="lbl" style="margin:2px 0 4px;">價格行（可分開控制、可刪除）</div>'
+        + pricesHTML
+        + '<button type="button" class="btn-add zx-tp-add" data-idx="'+i+'" style="margin-top:4px;">+ 新增價格行</button>'
+        + '<button type="button" class="btn-remove zx-table-row-remove" data-idx="'+i+'" style="width:100%;margin-top:8px;">刪除此列</button>'
+      + '</div>';
+    }).join("");
+    syncLineTools();
+  }
+
   /* ---------- dome 規格價目表式 table rows (A4) ---------- */
   function renderDomeTableRows(){
     var box = document.getElementById("domeTableRowsList");
@@ -2240,6 +2325,7 @@
       document.getElementById("taimallLimitUnit").value = state.taimallLimitUnit || "";
       document.getElementById("taimallAccent").value = state.taimallAccent || "#e60012";
     } else if (state.template==="zhongxiao"){
+      var isZhongxiaoTable = state.zhongxiaoBg === "A4";
       document.getElementById("zhongxiaoBg").value = state.zhongxiaoBg || "12x8";
       fillBrandSelect(document.getElementById("zhongxiaoBrand"), state.zhongxiaoBrand);
       document.getElementById("zhongxiaoLogoScale").value = state.zhongxiaoLogoScale || 1;
@@ -2248,9 +2334,14 @@
       document.getElementById("zhongxiaoHeadline").value = state.zhongxiaoHeadline || "";
       document.getElementById("zhongxiaoHighlight").value = state.zhongxiaoHighlight || "";
       document.getElementById("zhongxiaoSub").value = state.zhongxiaoSub || "";
+      document.getElementById("zhongxiaoRowsFieldset").classList.toggle("hidden", isZhongxiaoTable);
+      document.getElementById("zhongxiaoTableFieldset").classList.toggle("hidden", !isZhongxiaoTable);
       renderZhongxiaoRows();
+      renderZhongxiaoTableRows();
+      document.getElementById("zhongxiaoTableCurrency").value = (state.zhongxiaoTableCurrency != null ? state.zhongxiaoTableCurrency : "");
       document.getElementById("zhongxiaoDim").value = state.zhongxiaoDim || "";
       document.getElementById("zhongxiaoAccent").value = state.zhongxiaoAccent || "#d3311f";
+      document.getElementById("zhongxiaoRowShade").value = state.zhongxiaoRowShade || "#ece5da";
     }
     syncLineTools();
   }
@@ -2655,6 +2746,60 @@
       state.zhongxiaoRows.splice(+e.target.dataset.idx,1); renderZhongxiaoRows(); renderCard();
     });
     document.getElementById("zhongxiaoAccent").addEventListener("input", function(){ state.zhongxiaoAccent=this.value; renderCard(); });
+    document.getElementById("zhongxiaoRowShade").addEventListener("input", function(){ state.zhongxiaoRowShade=this.value; renderCard(); });
+    document.getElementById("zhongxiaoTableCurrency").addEventListener("input", function(){ state.zhongxiaoTableCurrency=this.value; renderCard(); });
+    document.getElementById("zhongxiaoTableAddRow").addEventListener("click", function(){
+      if (!state.zhongxiaoTableRows) state.zhongxiaoTableRows = [];
+      var idx = state.zhongxiaoTableRows.length;
+      state.zhongxiaoTableRows.push({name:"", spec:"", prices:[{label:"售價", value:"", unit:"元", highlight:false}]});
+      if (!state.lineStyles) state.lineStyles = {};
+      state.lineStyles["zhongxiao.table."+idx+".name"] = {fontScale:1.1, dx:0, dy:0};
+      state.lineStyles["zhongxiao.table."+idx+".spec"] = {fontScale:1.45, dx:0, dy:1.5};
+      renderZhongxiaoTableRows(); renderCard();
+    });
+    document.getElementById("zhongxiaoTableRowsList").addEventListener("input", function(e){
+      var idx = e.target.dataset.idx; if (idx===undefined) return;
+      var row = state.zhongxiaoTableRows[+idx]; if (!row) return;
+      var pidx = e.target.dataset.pidx;
+      if (e.target.classList.contains("zx-table-name-input")) row.name = e.target.value;
+      else if (e.target.classList.contains("zx-table-spec-input")) row.spec = e.target.value;
+      else if (pidx!==undefined){
+        var p = ensureRowPrices(row)[+pidx]; if (!p) return;
+        if (e.target.classList.contains("zx-tp-label-input")) p.label = e.target.value;
+        else if (e.target.classList.contains("zx-tp-value-input")) p.value = e.target.value;
+        else if (e.target.classList.contains("zx-tp-unit-input")) p.unit = e.target.value;
+        else return;
+      }
+      else return;
+      renderCard();
+    });
+    document.getElementById("zhongxiaoTableRowsList").addEventListener("change", function(e){
+      var idx = e.target.dataset.idx, pidx = e.target.dataset.pidx;
+      if (idx===undefined || pidx===undefined) return;
+      if (!e.target.classList.contains("zx-tp-highlight-input")) return;
+      var row = state.zhongxiaoTableRows[+idx]; if (!row) return;
+      var p = ensureRowPrices(row)[+pidx]; if (!p) return;
+      p.highlight = e.target.checked; renderCard();
+    });
+    document.getElementById("zhongxiaoTableRowsList").addEventListener("click", function(e){
+      var addBtn = e.target.closest(".zx-tp-add");
+      if (addBtn){
+        var row = state.zhongxiaoTableRows[+addBtn.dataset.idx]; if (!row) return;
+        ensureRowPrices(row).push({label:"特價", value:"", unit:"元", highlight:true});
+        renderZhongxiaoTableRows(); renderCard(); return;
+      }
+      var rmBtn = e.target.closest(".zx-tp-remove");
+      if (rmBtn){
+        var row2 = state.zhongxiaoTableRows[+rmBtn.dataset.idx]; if (!row2) return;
+        var arr = ensureRowPrices(row2);
+        if (arr.length > 1) arr.splice(+rmBtn.dataset.pidx, 1);
+        else arr[0] = {label:"", value:"", unit:"元", highlight:false};
+        renderZhongxiaoTableRows(); renderCard(); return;
+      }
+      if (e.target.classList.contains("zx-table-row-remove")){
+        state.zhongxiaoTableRows.splice(+e.target.dataset.idx,1); renderZhongxiaoTableRows(); renderCard();
+      }
+    });
 
     /* ---- 台茂特賣會 ---- */
     document.getElementById("taimallDownloadTemplate").addEventListener("click", downloadTaimallTemplate);
