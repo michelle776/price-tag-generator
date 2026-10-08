@@ -292,6 +292,28 @@ test("天母SOGO：組合卡 15×10、規格價目表 10.8×15、小張電視價
   assert.deepEqual(tv.size, { w: 10, h: 7 });
 });
 
+/* ---------------- 忠孝SOGO 門市卡 ---------------- */
+
+test("忠孝SOGO：預設 12×8cm、底圖版型預設 12x8", () => {
+  const app = loadApp();
+  const zx = plain(app.DEFAULTS.zhongxiao);
+  assert.equal(zx.template, "zhongxiao");
+  assert.deepEqual(zx.size, { w: 12, h: 8 });
+  assert.equal(zx.zhongxiaoBg, "12x8");
+});
+
+test("addCardsToFillPage：忠孝SOGO 12×8（一般排版、非拼版）同樣新增獨立卡片補滿頁面", () => {
+  const app = loadApp();
+  const zx = plain(app.DEFAULTS.zhongxiao);
+  app.setDeck([Object.assign({}, zx, { copies: 3 })], 0.2);
+  // 12×8 在 1cm 頁邊、0.2cm 間距下一頁放 1 欄 × 3 列 = 3 張
+  assert.equal(app.addCardsToFillPage(0), 2);
+  const cards = app.getDeck().cards;
+  assert.equal(cards.length, 3);
+  assert.deepEqual(cards.map(c => c.copies), [1, 1, 1]);
+  assert.notEqual(cards[0], cards[1], "新增的應是獨立物件");
+});
+
 test("loadDeck：舊的 11×15 規格表存檔尺寸不被改動", () => {
   const app = loadApp();
   const old = Object.assign(plain(app.DEFAULTS.specs), { size: { w: 11, h: 15 } });

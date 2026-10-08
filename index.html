@@ -241,6 +241,12 @@
   .dome-table-price .dtp-line.red-price{ font-size:calc(4.2cqw * var(--fontscale,1) * var(--ls,1)); font-weight:800; }
   .specs-row-price .red-price, .specs-row-price.red-price{ color:var(--accent,#c0392b); }
 
+  /* 忠孝SOGO門市卡：白底＋下緣遠東SOGO細線版頭的背景底圖，內容版型沿用大巨蛋的 .dome-* 樣式 */
+  .cardface.zhongxiao{
+    justify-content:flex-start; padding:7cqw 0 var(--zx-bottompad,12cqw) 0;
+    background-size:cover; background-position:center; background-repeat:no-repeat;
+  }
+
   /* 台茂特賣會卡（A4 滿版）：深藍外框 + 米色內板，單一商品 logo／品名／型號／介紹／原價／新品特價／限量 */
   .cardface.taimall{ padding:0; background:#1c2545; display:flex; flex-direction:column; color:#2b2b2b; }
   .taimall-top{ flex:none; padding:4.4cqw 0 3.4cqw; display:flex; justify-content:center; }
@@ -318,6 +324,7 @@
         <button type="button" data-tpl="dome">大巨蛋門市卡</button>
         <button type="button" data-tpl="compare">台茂價格卡</button>
         <button type="button" data-tpl="taimall">台茂特賣會</button>
+        <button type="button" data-tpl="zhongxiao">忠孝SOGO</button>
       </div>
       <button type="button" class="btn ghost" id="resetSampleBtn" style="width:100%;">重設為此版型範例內容</button>
     </fieldset>
@@ -610,6 +617,52 @@
         <label class="field"><span class="lbl">強調色（新品特價／限量的數字）</span><input type="color" id="taimallAccent"></label>
       </fieldset>
     </div>
+
+    <!-- ===== ZHONGXIAO (忠孝SOGO) FORM ===== -->
+    <div id="formZhongxiao">
+      <fieldset>
+        <legend>底圖版型</legend>
+        <label class="field"><span class="lbl">背景底圖</span>
+          <select id="zhongxiaoBg">
+            <option value="12x8">12 × 8 cm 版面</option>
+            <option value="7x4">7 × 4 cm 版面（小價格牌）</option>
+            <option value="A4">A4 版面</option>
+          </select>
+        </label>
+      </fieldset>
+      <fieldset>
+        <legend>品牌 Logo</legend>
+        <label class="field"><span class="lbl">品牌</span><select id="zhongxiaoBrand"></select></label>
+        <label class="field"><span class="lbl">或上傳圖片（取代上方選擇）</span><input type="file" id="zhongxiaoBrandUpload" accept="image/*"></label>
+        <label class="field"><span class="lbl">Logo 大小 <span id="zhongxiaoLogoScaleVal" class="tiny"></span></span>
+          <input type="range" id="zhongxiaoLogoScale" min="0.5" max="2" step="0.05" value="1" style="width:100%;"></label>
+        <label class="field"><span class="lbl">Logo 對齊</span>
+          <select id="zhongxiaoLogoAlign">
+            <option value="center">置中</option>
+            <option value="left">靠左</option>
+          </select>
+        </label>
+      </fieldset>
+      <fieldset>
+        <legend>商品內容</legend>
+        <label class="field"><span class="lbl">標題（商品名稱，可用 **文字** 加粗）</span><textarea id="zhongxiaoHeadline" rows="2"></textarea></label>
+        <label class="field"><span class="lbl">標題中要強調的文字（會套用強調色，選用）</span><input type="text" id="zhongxiaoHighlight"></label>
+        <label class="field"><span class="lbl">副標（型號 / 顏色，選用，較小灰字）</span><input type="text" id="zhongxiaoSub"></label>
+      </fieldset>
+      <fieldset>
+        <legend>價格列</legend>
+        <div class="listbox" id="zhongxiaoRowsList"></div>
+        <button type="button" class="btn-add" id="zhongxiaoAddRow">+ 新增一列價格</button>
+      </fieldset>
+      <fieldset>
+        <legend>最下方備註（選用）</legend>
+        <label class="field"><span class="lbl">內容（顯示於價格下方一行）</span><input type="text" id="zhongxiaoDim"></label>
+      </fieldset>
+      <fieldset>
+        <legend>顏色</legend>
+        <label class="field"><span class="lbl">強調色（勾選「特價／強調」的列會套用此色）</span><input type="color" id="zhongxiaoAccent"></label>
+      </fieldset>
+    </div>
   </aside>
 
   <!-- ============ RIGHT: STAGE ============ -->
@@ -885,6 +938,24 @@
         "taimall.specialLine":{fontScale:1.3, dx:0, dy:0},
         "taimall.limitLine":{fontScale:1.15, dx:0, dy:0}
       }
+    },
+    zhongxiao: {
+      template:"zhongxiao",
+      size:{w:12,h:8}, copies:1, cutGuides:true,
+      zhongxiaoBg:"12x8",
+      zhongxiaoBrand:"dynaudio", zhongxiaoBrandUpload:"", zhongxiaoLogoScale:1, zhongxiaoLogoAlign:"center", lineHeightScale:1, fontScale:1,
+      zhongxiaoHeadline:"Focus 20 XD 主動式喇叭",
+      zhongxiaoHighlight:"",
+      zhongxiaoSub:"胡桃木",
+      zhongxiaoRows:[
+        {label:"建議售價", value:"168,000", unit:"元", highlight:false}
+      ],
+      zhongxiaoDim:"",
+      zhongxiaoAccent:"#d3311f",
+      lineStyles:{
+        "zhongxiao.headline":{fontScale:1.15, dx:0, dy:0},
+        "zhongxiao.sub":{fontScale:1.3, dx:0, dy:0}
+      }
     }
   };
   var TAIMALL_DEFAULT_LINE_STYLES = DEFAULTS.taimall.lineStyles;
@@ -915,6 +986,85 @@
     if (!sample || !state || state.template !== "compare") return;
     Object.keys(sample).forEach(function(k){ state[k] = sample[k]; });
     state.lineStyles = {};
+  }
+
+  // 忠孝SOGO門市卡：遠東SOGO忠孝館背景底圖（白底＋下緣細線版頭），三種尺寸各自的範例內容
+  var ZHONGXIAO_BG = {
+    "12x8": "templates/zhongxiao-bg-12x8.png",
+    "7x4": "templates/zhongxiao-bg-7x4.png",
+    "A4": "templates/zhongxiao-bg-A4.png"
+  };
+  var ZHONGXIAO_SAMPLES = {
+    "12x8": {
+      zhongxiaoBrand:"dynaudio", zhongxiaoBrandUpload:"",
+      zhongxiaoHeadline:"Focus 20 XD 主動式喇叭",
+      zhongxiaoSub:"胡桃木",
+      zhongxiaoRows:[
+        {label:"建議售價", value:"168,000", unit:"元", highlight:false}
+      ],
+      zhongxiaoDim:"",
+      lineStyles:{
+        "zhongxiao.headline":{fontScale:1.15, dx:0, dy:0},
+        "zhongxiao.sub":{fontScale:1.3, dx:0, dy:0}
+      }
+    },
+    "7x4": {
+      zhongxiaoBrand:"audiotechnica", zhongxiaoBrandUpload:"",
+      zhongxiaoHeadline:"ATH-M50xBT2 耳罩式藍牙耳機",
+      zhongxiaoSub:"經典黑",
+      zhongxiaoRows:[
+        {label:"建議售價", value:"7,990", unit:"元", highlight:false}
+      ],
+      zhongxiaoDim:"",
+      lineStyles:{}
+    },
+    "A4": {
+      zhongxiaoBrand:"bw", zhongxiaoBrandUpload:"",
+      zhongxiaoHeadline:"703 S2 落地式喇叭（一對）",
+      zhongxiaoSub:"緞光白",
+      zhongxiaoRows:[
+        {label:"建議售價", value:"371,000", unit:"元", highlight:false},
+        {label:"特價", value:"315,000", unit:"元", highlight:true}
+      ],
+      zhongxiaoDim:"",
+      lineStyles:{
+        "zhongxiao.headline":{fontScale:1.3, dx:0, dy:0},
+        "zhongxiao.sub":{fontScale:1.6, dx:0, dy:0},
+        "zhongxiao.row.1":{fontScale:1.2, dx:0, dy:0}
+      }
+    }
+  };
+  // applies a 忠孝SOGO background variant; resetContent also swaps in that variant's sample text/rows/line-sizes
+  function applyZhongxiaoBgVariant(key, resetContent){
+    state.zhongxiaoBg = key;
+    if (resetContent){
+      var sample = ZHONGXIAO_SAMPLES[key];
+      if (sample){
+        state.zhongxiaoBrand = sample.zhongxiaoBrand;
+        state.zhongxiaoBrandUpload = sample.zhongxiaoBrandUpload;
+        state.zhongxiaoHeadline = sample.zhongxiaoHeadline;
+        state.zhongxiaoHighlight = sample.zhongxiaoHighlight || "";
+        state.zhongxiaoSub = sample.zhongxiaoSub;
+        state.zhongxiaoRows = sample.zhongxiaoRows ? clone(sample.zhongxiaoRows) : [];
+        state.zhongxiaoDim = sample.zhongxiaoDim || "";
+        if (sample.zhongxiaoAccent) state.zhongxiaoAccent = sample.zhongxiaoAccent;
+        if (sample.zhongxiaoLogoScale) state.zhongxiaoLogoScale = sample.zhongxiaoLogoScale;
+        state.lineStyles = sample.lineStyles ? clone(sample.lineStyles) : {};
+      }
+    }
+  }
+  // finds the ZHONGXIAO_BG key whose preset size matches the given w/h, if any
+  function matchZhongxiaoBgKeyForSize(w, h){
+    return Object.keys(ZHONGXIAO_BG).filter(function(k){
+      return SIZE_PRESETS[k] && SIZE_PRESETS[k].w===w && SIZE_PRESETS[k].h===h;
+    })[0] || null;
+  }
+  // keeps the 忠孝SOGO background variant in sync when the size changes via the generic size preset / width / height controls
+  function syncZhongxiaoBgToSize(){
+    if (!state || state.template !== "zhongxiao") return false;
+    var key = matchZhongxiaoBgKeyForSize(state.size.w, state.size.h);
+    if (key && key !== state.zhongxiaoBg){ applyZhongxiaoBgVariant(key, false); return true; }
+    return false;
   }
 
   var deck = null;       // {cards:[cardState, ...]}
@@ -1171,6 +1321,9 @@
       var ref = limitAnchor.nextSibling;
       while (lb.firstChild){ limitAnchor.parentNode.insertBefore(lb.firstChild, ref); }
     }
+    injectLineTools("zhongxiaoHeadline", "zhongxiao.headline");
+    injectLineTools("zhongxiaoSub", "zhongxiao.sub");
+    injectLineTools("zhongxiaoDim", "zhongxiao.dim");
   }
 
   /* ---------- card builders ---------- */
@@ -1386,12 +1539,49 @@
     + '</div>';
   }
 
+  function buildZhongxiao(s){
+    var logo = brandImgTag(s.zhongxiaoBrand, s.zhongxiaoBrandUpload, "dome-logo", s.zhongxiaoLogoScale);
+    var logoAlign = s.zhongxiaoLogoAlign === "left" ? "align-left" : "align-center";
+    var logoHTML = logo ? '<div class="dome-logo-wrap '+logoAlign+'">'+logo+'</div>' : "";
+    var headlineEsc = esc(s.zhongxiaoHeadline||"");
+    var hi = (s.zhongxiaoHighlight||"").trim();
+    if (hi !== ""){
+      var hiEsc = esc(hi);
+      headlineEsc = headlineEsc.split(hiEsc).join('<span class="hl">'+hiEsc+'</span>');
+    }
+    headlineEsc = headlineEsc.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+    var headlineHTML = headlineEsc.replace(/\n/g,"<br>");
+    var subHTML = (s.zhongxiaoSub||"").trim() ? '<p class="dome-sub" style="'+lineStyleAttr(s,"zhongxiao.sub")+'">'+fmt(s.zhongxiaoSub)+'</p>' : "";
+    var dimHTML = (s.zhongxiaoDim||"").trim() ? '<p class="dome-dim" style="'+lineStyleAttr(s,"zhongxiao.dim")+'">'+fmt(s.zhongxiaoDim)+'</p>' : "";
+    var bgFile = ZHONGXIAO_BG[s.zhongxiaoBg] || ZHONGXIAO_BG["12x8"];
+    var stacked = s.zhongxiaoBg !== "7x4";
+    var bottomPad = s.zhongxiaoBg === "7x4" ? "10cqw" : s.zhongxiaoBg === "A4" ? "11cqw" : "12cqw";
+    var cardStyle = "background-image:url('"+bgFile+"');--accent:"+esc(s.zhongxiaoAccent)+";--lhmul:"+(s.lineHeightScale||1)+";--fontscale:"+(s.fontScale||1)+";--zx-bottompad:"+bottomPad;
+    var rowsHTML = (s.zhongxiaoRows||[]).map(function(r, i){
+      var hl = r.highlight ? " hl" : "";
+      return '<span class="dome-row" style="'+lineStyleAttr(s,"zhongxiao.row."+i)+'">'
+        + '<span class="dome-row-label'+hl+'">'+fmt(r.label)+'</span>'
+        + '<span class="dome-row-value'+hl+'">'+money(r.value)+'</span>'
+        + '<span class="dome-row-unit'+hl+'">'+fmt(r.unit)+'</span>'
+      + '</span>';
+    }).join("");
+    var bodyHTML = '<h1 class="dome-headline" style="'+lineStyleAttr(s,"zhongxiao.headline")+'">'+headlineHTML+'</h1>'
+      + subHTML
+      + '<div class="dome-rows '+(stacked?'stacked ':'')+logoAlign+'">'+rowsHTML+'</div>'
+      + dimHTML;
+    return '<div class="cardface zhongxiao" style="'+cardStyle+'">'
+      + logoHTML
+      + '<div class="dome-content '+logoAlign+'">'+bodyHTML+'</div>'
+    + '</div>';
+  }
+
   function buildCardInner(s){
     if (s.template==="combo") return buildCombo(s);
     if (s.template==="specs") return buildSpecs(s);
     if (s.template==="dome") return buildDome(s);
     if (s.template==="taimall") return buildTaimall(s);
     if (s.template==="sogotv") return buildSogoTv(s);
+    if (s.template==="zhongxiao") return buildZhongxiao(s);
     return buildCompare(s);
   }
 
@@ -1608,7 +1798,7 @@
       var fullBleed = page.tile || (items.length===1 && isFullBleedCard(items[0].card));
       var inner = items.map(function(it){
         var c = it.card;
-        var cls = "card" + (c.template==="dome" ? " card-dome" : "") + (c.template==="taimall" ? " card-dome card-taimall" : "") + (c.cutGuides ? " cut-guide" : "") + (it.cardIndex===activeIndex ? " card-active" : "");
+        var cls = "card" + (c.template==="dome" ? " card-dome" : "") + (c.template==="taimall" ? " card-dome card-taimall" : "") + (c.template==="zhongxiao" ? " card-dome card-zhongxiao" : "") + (c.cutGuides ? " cut-guide" : "") + (it.cardIndex===activeIndex ? " card-active" : "");
         return '<div class="'+cls+'" data-card-idx="'+it.cardIndex+'" style="width:'+c.size.w+'cm;height:'+c.size.h+'cm;">'+buildCardInner(c)+'</div>';
       }).join("");
       var innerCls = "a4-inner" + (fullBleed ? " full-bleed" : "") + (page.tile ? " a4-tile" : "");
@@ -1638,13 +1828,15 @@
   function cardLabel(c){
     var tplName = c.template==="combo" ? "天母組合卡" : c.template==="specs" ? "天母規格表" :
       c.template==="sogotv" ? "天母電視卡" :
-      c.template==="dome" ? "大巨蛋卡" : c.template==="taimall" ? "台茂特賣卡" : "台茂價格卡";
+      c.template==="dome" ? "大巨蛋卡" : c.template==="taimall" ? "台茂特賣卡" :
+      c.template==="zhongxiao" ? "忠孝卡" : "台茂價格卡";
     var text = "";
     if (c.template==="combo") text = c.comboHeadline;
     else if (c.template==="specs") text = c.specsHeadline1;
     else if (c.template==="dome") text = (c.domeHeadline||"").split("\n")[0];
     else if (c.template==="taimall") text = (c.taimallName||"").split("\n")[0];
     else if (c.template==="sogotv") text = (c.sogotvHeadline||"").split("\n")[0];
+    else if (c.template==="zhongxiao") text = (c.zhongxiaoHeadline||"").split("\n")[0];
     else text = (c.compareLines||"").split("\n")[0];
     text = (text||"").replace(/\*\*/g,"").trim();
     return tplName + (text ? "｜"+text : "");
@@ -1844,6 +2036,24 @@
     syncLineTools();
   }
 
+  /* ---------- 忠孝SOGO 動態價格列 ---------- */
+  function renderZhongxiaoRows(){
+    var box = document.getElementById("zhongxiaoRowsList");
+    box.innerHTML = (state.zhongxiaoRows||[]).map(function(r, i){
+      return '<div class="row-group" data-idx="'+i+'">'
+        + '<div class="row2">'
+          + '<label class="field"><span class="lbl">標籤</span><input type="text" class="zx-row-label-input" data-idx="'+i+'" value="'+esc(r.label)+'"></label>'
+          + '<label class="field"><span class="lbl">單位</span><input type="text" class="zx-row-unit-input" data-idx="'+i+'" value="'+esc(r.unit)+'"></label>'
+        + '</div>'
+        + '<label class="field"><span class="lbl">金額</span><input type="text" class="zx-row-value-input" data-idx="'+i+'" value="'+esc(r.value)+'"></label>'
+        + '<label class="inline"><input type="checkbox" class="zx-row-highlight-input" data-idx="'+i+'"'+(r.highlight?' checked':'')+'> <span class="tiny">特價／強調（套用強調色）</span></label>'
+        + lineToolsHTML("zhongxiao.row."+i)
+        + '<button type="button" class="btn-remove zx-row-remove" data-idx="'+i+'" style="width:100%;margin-top:6px;">刪除此列</button>'
+      + '</div>';
+    }).join("");
+    syncLineTools();
+  }
+
   /* ---------- dome 規格價目表式 table rows (A4) ---------- */
   function renderDomeTableRows(){
     var box = document.getElementById("domeTableRowsList");
@@ -1920,11 +2130,12 @@
     document.getElementById("formCompare").classList.toggle("hidden", state.template!=="compare");
     document.getElementById("formDome").classList.toggle("hidden", state.template!=="dome");
     document.getElementById("formTaimall").classList.toggle("hidden", state.template!=="taimall");
+    document.getElementById("formZhongxiao").classList.toggle("hidden", state.template!=="zhongxiao");
 
     fillSizePresetOptions();
-    // 大巨蛋門市卡尺寸由底圖決定、台茂特賣會固定 A4 滿版：隱藏「尺寸預設」下拉避免門市選錯（寬高仍可手動微調）
+    // 大巨蛋門市卡、忠孝SOGO門市卡尺寸由底圖決定、台茂特賣會固定 A4 滿版：隱藏「尺寸預設」下拉避免門市選錯（寬高仍可手動微調）
     // 天母SOGO 的尺寸由「版面」決定，同樣隱藏
-    document.getElementById("sizePresetRow").classList.toggle("hidden", state.template === "dome" || state.template === "taimall" || sogo);
+    document.getElementById("sizePresetRow").classList.toggle("hidden", state.template === "dome" || state.template === "taimall" || state.template === "zhongxiao" || sogo);
     document.getElementById("sizeW").value = state.size.w;
     document.getElementById("sizeH").value = state.size.h;
     var presetMatch = Object.keys(SIZE_PRESETS).filter(function(k){
@@ -2028,6 +2239,18 @@
       document.getElementById("taimallLimit").value = state.taimallLimit || "";
       document.getElementById("taimallLimitUnit").value = state.taimallLimitUnit || "";
       document.getElementById("taimallAccent").value = state.taimallAccent || "#e60012";
+    } else if (state.template==="zhongxiao"){
+      document.getElementById("zhongxiaoBg").value = state.zhongxiaoBg || "12x8";
+      fillBrandSelect(document.getElementById("zhongxiaoBrand"), state.zhongxiaoBrand);
+      document.getElementById("zhongxiaoLogoScale").value = state.zhongxiaoLogoScale || 1;
+      document.getElementById("zhongxiaoLogoScaleVal").textContent = Math.round((state.zhongxiaoLogoScale||1)*100)+"%";
+      document.getElementById("zhongxiaoLogoAlign").value = state.zhongxiaoLogoAlign || "center";
+      document.getElementById("zhongxiaoHeadline").value = state.zhongxiaoHeadline || "";
+      document.getElementById("zhongxiaoHighlight").value = state.zhongxiaoHighlight || "";
+      document.getElementById("zhongxiaoSub").value = state.zhongxiaoSub || "";
+      renderZhongxiaoRows();
+      document.getElementById("zhongxiaoDim").value = state.zhongxiaoDim || "";
+      document.getElementById("zhongxiaoAccent").value = state.zhongxiaoAccent || "#d3311f";
     }
     syncLineTools();
   }
@@ -2133,20 +2356,20 @@
         document.getElementById("sizeW").value = state.size.w;
         document.getElementById("sizeH").value = state.size.h;
         if (state.template === "compare" && COMPARE_SAMPLES[v]){ applyCompareSample(v); populateForm(); }
-        if (syncDomeBgToSize()) populateForm();
+        if (syncDomeBgToSize() || syncZhongxiaoBgToSize()) populateForm();
         renderCard();
       }
     });
     document.getElementById("sizeW").addEventListener("input", function(){
       var v = parseFloat(this.value); if (!v || v<=0) return;
       state.size.w = v; document.getElementById("sizePreset").value = "custom";
-      if (syncDomeBgToSize()) populateForm();
+      if (syncDomeBgToSize() || syncZhongxiaoBgToSize()) populateForm();
       renderCard();
     });
     document.getElementById("sizeH").addEventListener("input", function(){
       var v = parseFloat(this.value); if (!v || v<=0) return;
       state.size.h = v; document.getElementById("sizePreset").value = "custom";
-      if (syncDomeBgToSize()) populateForm();
+      if (syncDomeBgToSize() || syncZhongxiaoBgToSize()) populateForm();
       renderCard();
     });
     document.getElementById("copies").addEventListener("input", function(){
@@ -2386,6 +2609,52 @@
         state.domeTableRows.splice(+e.target.dataset.idx,1); renderDomeTableRows(); renderCard();
       }
     });
+
+    /* ---- 忠孝SOGO ---- */
+    document.getElementById("zhongxiaoBg").addEventListener("change", function(){
+      if (SIZE_PRESETS[this.value]){
+        state.size = {w:SIZE_PRESETS[this.value].w, h:SIZE_PRESETS[this.value].h};
+      }
+      applyZhongxiaoBgVariant(this.value, true);
+      populateForm();
+      renderCard();
+    });
+    document.getElementById("zhongxiaoBrand").addEventListener("change", function(){ state.zhongxiaoBrand=this.value; renderCard(); });
+    document.getElementById("zhongxiaoBrandUpload").addEventListener("change", function(){
+      var f=this.files[0]; if(!f) return;
+      fileToDataUrl(f, function(url){ state.zhongxiaoBrandUpload=url; renderCard(); });
+    });
+    document.getElementById("zhongxiaoLogoScale").addEventListener("input", function(){
+      state.zhongxiaoLogoScale = parseFloat(this.value) || 1;
+      document.getElementById("zhongxiaoLogoScaleVal").textContent = Math.round(state.zhongxiaoLogoScale*100)+"%";
+      renderCard();
+    });
+    document.getElementById("zhongxiaoLogoAlign").addEventListener("change", function(){ state.zhongxiaoLogoAlign=this.value; renderCard(); });
+    document.getElementById("zhongxiaoHeadline").addEventListener("input", function(){ state.zhongxiaoHeadline=this.value; renderCard(); });
+    document.getElementById("zhongxiaoHighlight").addEventListener("input", function(){ state.zhongxiaoHighlight=this.value; renderCard(); });
+    document.getElementById("zhongxiaoSub").addEventListener("input", function(){ state.zhongxiaoSub=this.value; renderCard(); });
+    document.getElementById("zhongxiaoDim").addEventListener("input", function(){ state.zhongxiaoDim=this.value; renderCard(); });
+    document.getElementById("zhongxiaoAddRow").addEventListener("click", function(){
+      state.zhongxiaoRows.push({label:"", value:"", unit:"元", highlight:false}); renderZhongxiaoRows(); renderCard();
+    });
+    document.getElementById("zhongxiaoRowsList").addEventListener("input", function(e){
+      var idx = e.target.dataset.idx; if (idx===undefined) return;
+      if (e.target.classList.contains("zx-row-label-input")) state.zhongxiaoRows[+idx].label = e.target.value;
+      else if (e.target.classList.contains("zx-row-value-input")) state.zhongxiaoRows[+idx].value = e.target.value;
+      else if (e.target.classList.contains("zx-row-unit-input")) state.zhongxiaoRows[+idx].unit = e.target.value;
+      else return;
+      renderCard();
+    });
+    document.getElementById("zhongxiaoRowsList").addEventListener("change", function(e){
+      if (!e.target.classList.contains("zx-row-highlight-input")) return;
+      var idx = e.target.dataset.idx; if (idx===undefined) return;
+      state.zhongxiaoRows[+idx].highlight = e.target.checked; renderCard();
+    });
+    document.getElementById("zhongxiaoRowsList").addEventListener("click", function(e){
+      if (!e.target.classList.contains("zx-row-remove")) return;
+      state.zhongxiaoRows.splice(+e.target.dataset.idx,1); renderZhongxiaoRows(); renderCard();
+    });
+    document.getElementById("zhongxiaoAccent").addEventListener("input", function(){ state.zhongxiaoAccent=this.value; renderCard(); });
 
     /* ---- 台茂特賣會 ---- */
     document.getElementById("taimallDownloadTemplate").addEventListener("click", downloadTaimallTemplate);
